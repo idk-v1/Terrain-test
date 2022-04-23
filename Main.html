@@ -1,10 +1,16 @@
 <!DOCTYPE html>
     <body style="overflow: hidden; padding: 0px; margin: 0px; border: 0px; background-color: #303039;">
+
+        <!--FPS Counter-->
         <p id="fps" style="position: fixed; top: 0px; left: 0px; margin: 0px; color: #fff;">FPS: --</p>
         <hr style="border-top: 3px solid #bbb; position: fixed; margin: 0px; top: 25px; left: 0px; width: 200px;"></hr>
+
+        <!--Seed Input-->
         <p style="margin: 0px; position: fixed; top: 30px; left: 0px; color: #fff;">Seed</p>
         <input id="seedIn" style="position: fixed; top: 50px; left: 0px; margin: 0px;"></input>
         <hr style="border-top: 3px solid #bbb; position: fixed; margin: 0px; top: 85px; left: 0px; width: 200px;"></hr>
+
+        <!--Generation Mode-->
         <p style="position: fixed; top: 95px; left: 0px; margin: 0px; color: #fff;">Generation Mode</p>
         <select id="mode" style="position: fixed; top: 115px; left: 0px; margin: 0px;">
             <option value="1">Normal</option>
@@ -14,16 +20,25 @@
             <option value="5">?????</option>
         </select>
         <hr style="border-top: 3px solid #bbb; position: fixed; margin: 0px; top: 140px; left: 0px; width: 200px;"></hr>
+
+        <!--Size Input-->
         <p style="position: fixed; margin: 0px; top: 145px; left: 0px; color: #fff;">Map Size</p>
         <input id="size" style="position: fixed; margin: 0px; top: 165px; left: 0px; width: 50px;"></input>
         <hr style="border-top: 3px solid #bbb; position: fixed; margin: 0px; top: 195px; left: 0px; width: 200px;"></hr>
+
+        <!--Start Button-->
         <p style="position: fixed; margin: 0px; top: 205px; left: 0px; color: #fff;">Create World</p>
         <button id="start" style="position: fixed; margin: 0px; top: 225px; left: 0px;">Start</button>
         <hr style="border-top: 3px solid #bbb; position: fixed; margin: 0px; top: 255px; left: 0px; width: 200px;"></hr>
+
         <div style="position: fixed; margin: 0px; left: 200px; top: 0px; height: 100%; border-left: 3px solid #bbb;"></div>
+
+        <!--Displays After Start-->
         <p id="seed" style="position: fixed; top: 25px; left: 0px; margin: 0px; display: none;">SEED: </p>
         <p id="rseed" style="position: fixed; top: 50px; left: 0px; margin: 0px; display: none;">TYPED: </p>
+
         <canvas id="canv" width="100" style="position: fixed; top: 0px; left: 50%; height: 100%"></canvas>
+
         <script>
             //Initialize Variables
             let fps, rseed, dt, x, y, size, mode;
