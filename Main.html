@@ -34,16 +34,18 @@
         <div style="position: fixed; margin: 0px; left: 200px; top: 0px; height: 100%; border-left: 3px solid #bbb;"></div>
 
         <!--Displays After Start-->
-        <p id="seed" style="position: fixed; top: 25px; left: 0px; margin: 0px; display: none;">SEED: </p>
-        <p id="rseed" style="position: fixed; top: 50px; left: 0px; margin: 0px; display: none;">TYPED: </p>
+        <p id="genT" style="position: fixed; top: 0px; left: 0px; margin: 0px; display: none; color: #fff;">Generation Time: --</p>
+        <p id="seed" style="position: fixed; top: 25px; left: 0px; margin: 0px; display: none;">Seed: </p>
+        <p id="rseed" style="position: fixed; top: 50px; left: 0px; margin: 0px; display: none;">Seed Typed: </p>
 
         <canvas id="canv" width="100" style="position: fixed; top: 0px; left: 50%; height: 100%"></canvas>
 
         <script>
+
             //Initialize Variables
-            let fps, rseed, dt, x, y, size, mode;
-            let up, dw, lf, rt = false;
-            let trr, str, ent = [];
+            let fps = 0, rseed, dt, x = 0, y = 0, size, mode;
+            let up = false, dw = false, lf = false, rt = false;
+            let trr = [], str = [], ent = [];
 
             //Setup Canvas
             let cnv = document.getElementById('canv');
@@ -63,7 +65,31 @@
             start.addEventListener('click', setup);
 
             function setup() {
-                window.alert("setup");
+
+                let genT = performance.now();
+
+                //Remove Creation Elements
+                seed.style.display = 'none';
+                mode.style.display = 'none';
+                size.style.display = 'none';
+                start.style.display = 'none';
+
+                setInterval(tick, 0);
+                dt = 0;
+                document.getElementById('genT').style.display = 'initial';
+                document.getElementById('genT').innerHTML = `Generation Time: ${Math.round((performance.now() - genT) * 1000) / 1000}`;
+            }
+
+            function tick() {
+
+            }
+
+            function update() {
+
+            }
+
+            function render() {
+
             }
 
         </script>
