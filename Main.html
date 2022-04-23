@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+    <body style="overflow: hidden">
+    <meta charset="UTF-8"></meta>
+    <canvas id="can" width="250" height="250" style="top: 0px; left: 50%; position: fixed;"></canvas>
+    <div id="txtC" style="top: 0px; left: 0px; position: fixed;"></div>
+    <div id="creaT" style="top: 25px; left: 0px; position: fixed;"></div>
+    <div id="sid" style="top: 50px; left: 0px; position: fixed"></div>
+    <select id="genMode" style="top: 0px; left: 0px; position: fixed">
+        <option value="1">Normal</option>
+        <option value="2">Ocean</option>
+        <option value="3">Flat</option>
+    </select>
+    <input id="seed" style="top: 0px; left: 75px; position: fixed"></input>
+    <button id="start" style="top: 50px; left: 0px; position: fixed">CREATE</button>
+    </body>
+    <script>
+        let seedD = document.getElementById('sid');
+        let sed = document.getElementById('seed');
+        let creaT = document.getElementById('creaT');
+        let start = document.getElementById('start');
+        let mode = document.getElementById('genMode');
+        let txtC = document.getElementById('txtC');
+        let canv = document.getElementById('can');
+        let ctx = canv.getContext('2d');
+
+        let lUp, fps, int, dt, can, createT;
+        let world, entities, struct = [];
+        let seed = sed.value;
+        let sc;
+        let pix;
+        let x = 0;
+        let y = 0;
+        let up, down, left, right = false;
+
+        canv.style.transform = "translate(-50%, 0)";
+        canv.width = window.innerHeight;
+        canv.height = window.innerHeight;
+
+        ctx.imageSmoothingEnabled = false;
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(0, 0, canv.height, canv.height);
+
+        start.addEventListener('click', setup);
+
+        function tick() {
+            var now = performance.now();
+            dt += now - lUp;
+            lUp = now;
+            while (dt >= 1000 / 60) {
+                dt -= 1000 / 60;
+                update();
+            }
+            render();
+        }
+
+        function render() {
+            let lastfps = fps;
+            fps = Math.round(1000 / dt);
+            txtC.innerHTML = `FPS: ${Math.round((fps + lastfps) / 2)}`;
+            img = new ImageData(pix, sc, sc);
+            ctx.putImageData(img, x, y);
+            ctx.scale(canv.height / 250, canv.height / 250);
+            ctx.drawImage(canv, x, y);
+            ctx.scale(250 / canv.height, 250 / canv.height);
+        }
+
+        function update() {
+            if (right) {
+                x-=2;
+            }
+            if (left) {
+                x+=2;
+            }
+            if (up) {
+                y+=2;
+            }
+            if (down) {
+                y-=2;
+            }
+            if (x < -sc / (sc / 125)) {
+                x = -sc / (sc / 125);
+            }
+            if (x > 0) {
+                x = 0;
+            }
+            if (y < -sc / (sc / 125)) {
+                y = -sc / (sc / 125);
+            }
+            if (y > 0) {
+                y = 0;
+            }
+            console.log(`X: ${x} | Y: ${y} | SC: ${sc}`);
+        }
+
+        function setup() {
+
+            //Remove START
+            sed.style.display = 'none';
+            mode.style.display = 'none';
+            start.style.display = 'none';
+
+            //Add Elements
+            sc = 500;
+            document.addEventListener('keydown', function(event) {
+                if (event.keyCode == 68) {
+                    right = true;
+                }
+                if (event.keyCode == 65) {
+                    left = true;
+                }
+                if (event.keyCode == 87) {
+                    up = true;
+                }
+                if (event.keyCode == 83) {
+                    down = true;
+                }
+            }, true);
+            document.addEventListener('keyup', function(event) {
+                if (event.keyCode == 68) {
+                    right = false;
+                }
+                if (event.keyCode == 65) {
+                    left = false;
+                }
+                if (event.keyCode == 87) {
+                    up = false;
+                }
+                if (event.keyCode == 83) {
+                    down = false;
+                }
+            }, true);
+
+            //Setup WorldGen
+            pix = new Uint8ClampedArray(sc * sc * 4);
+            for (let i = 0; i < pix.length; i += 4) {
+            pix[i + 0] = 0;
+            pix[i + 1] = 0;
+            pix[i + 2] = 0;
+            pix[i + 3] = 255;
+        }
+            seed = sed.value;
+            let rnd;
+            let wgt = performance.now();
+            if (sed.value.length == 0) {
+                rnd = Math.random();
+                seed = rnd;
+            }
+            let e = stringToHash(`${seed}`);
+            let f = stringToHash(`${e}`);
+            let g = stringToHash(`${f}`);
+            let i;
+            if (sed.value.length == 0) {
+                seedD.innerHTML = `Seed: ${g} | Typed: [RANDOM]`;
+            } else {
+                seedD.innerHTML = `Seed: ${g} | Typed: ${seed}`;
+            }
+            let j = pix.length;
+            let rt = performance.now();
+            for (i = 0; i < j; i += 4) {
+                let mul = `${stringToHash(`${i * e}`) * (stringToHash(`${ i * e * f / 2}`)) >> (8 * 64 / 2) / f / 2}`;
+
+                //Land
+                if (mode.value == 1) {
+                    if (mul.charAt(1) >= 2 && mul.charAt(3) >= 2) {
+                        pix[i + 1] = 255;
+                        pix[i - (sc - 1) * 4 + 1] = 255;
+                        pix[i - (sc + 1) * 4 + 1] = 255;
+                        pix[i - (sc) * 4 + 1] = 255;
+                        pix[i - (1) * 4 + 1] = 255;
+                        pix[i + (1) * 4 + 1] = 255;
+                        pix[i + (sc + 1) * 4 + 1] = 255;
+                        pix[i + (sc - 1) * 4 + 1] = 255;
+                        pix[i + (sc) * 4 + 1] = 255;
+                        
+                    } else {
+                        pix[i + 2] = 255;
+                    }
+                } else if (mode.value == 2) {
+                    if (mul.charAt(1) <= 0 && mul.charAt(3) <= 0) {
+                        pix[i + 0] = 0;
+                        pix[i + 1] = 255;
+                        pix[i + 2] = 0;
+                        pix[i + 3] = 255;
+                    } else {
+                        pix[i + 0] = 0;
+                        pix[i + 1] = 0;
+                        pix[i + 2] = 255;
+                        pix[i + 3] = 255;
+                    }
+                } else {
+                    if (mul.charAt(1) >= 0 && mul.charAt(3) >= 0) {
+                        pix[i + 0] = 0;
+                        pix[i + 1] = 255;
+                        pix[i + 2] = 0;
+                        pix[i + 3] = 255;
+                    } else {
+                        pix[i + 0] = 0;
+                        pix[i + 1] = 0;
+                        pix[i + 2] = 255;
+                        pix[i + 3] = 255;
+                    }
+                }
+            }
+
+            //Remove 1x1s
+            for (l = 0; l < 10; l++) {
+                for (i = 0; i < j; i += 4) {
+                    if (
+                    (pix[i + 1] == 255 && pix[i + sc * 4 + 2] == 255 && pix[i - sc * 4 + 2] == 255 && pix[i + 1 * 4 + 2] == 255) ||
+                    (pix[i + 1] == 255 && pix[i + sc * 4 + 2] == 255 && pix[i - sc * 4 + 2] == 255 && pix[i - 1 * 4 + 2] == 255) ||
+                    (pix[i + 1] == 255 && pix[i + sc * 4 + 2] == 255 && pix[i + 1 * 4 + 2] == 255 && pix[i - 1 * 4 + 2] == 255) ||
+                    (pix[i + 1] == 255 && pix[i - sc * 4 + 2] == 255 && pix[i + 1 * 4 + 2] == 255 && pix[i - 1 * 4 + 2] == 255)) {
+                        pix[i + 1] = 0;
+                        pix[i + 2] = 255;
+                    }
+                }
+            }
+
+            //Remove Water 1x1s
+            for (l = 0; l < 10; l++) {
+                for (i = 0; i < j; i += 4) {
+                    if (
+                    (pix[i + 2] == 255 && pix[i + sc * 4 + 1] == 255 && pix[i - sc * 4 + 1] == 255 && pix[i + 1 * 4 + 1] == 255) ||
+                    (pix[i + 2] == 255 && pix[i + sc * 4 + 1] == 255 && pix[i - sc * 4 + 1] == 255 && pix[i - 1 * 4 + 1] == 255) ||
+                    (pix[i + 2] == 255 && pix[i + sc * 4 + 1] == 255 && pix[i + 1 * 4 + 1] == 255 && pix[i - 1 * 4 + 1] == 255) ||
+                    (pix[i + 2] == 255 && pix[i - sc * 4 + 1] == 255 && pix[i + 1 * 4 + 1] == 255 && pix[i - 1 * 4 + 1] == 255)) {
+                        pix[i + 2] = 0;
+                        pix[i + 1] = 255;
+                    }
+                }
+            }
+
+            //Sand
+            for (i = 0; i < j; i += 4) {
+                if (pix[i + 2] == 255) {
+                    if (pix[(i  - sc * 4) + 1] == 255) {
+                        pix[i - sc * 4] = 255;
+                        pix[i - sc * 4 + 1] = 255;
+                        pix[i - sc * 4 + 2] = 0;
+                    }
+                    if (pix[(i  + sc * 4) + 1] == 255) {
+                        pix[i + sc * 4] = 255;
+                        pix[i + sc * 4 + 1] = 255;
+                        pix[i + sc * 4 + 2] = 0;
+                    }
+                    if (pix[(i  - 1 * 4) + 1] == 255) {
+                        pix[i - 1 * 4] = 255;
+                        pix[i - 1 * 4 + 1] = 255;
+                        pix[i - 1 * 4 + 2] = 0;
+                    }
+                    if (pix[(i  + 1 * 4) + 1] == 255) {
+                        pix[i + 1 * 4] = 255;
+                        pix[i + 1 * 4 + 1] = 255;
+                        pix[i + 1 * 4 + 2] = 0;
+                    }
+                }
+            }
+
+            //Border
+            for (m = 0; m < sc; m++) {
+                pix[m * 4 + 0] = 255;
+                pix[m * 4 + 1] = 0;
+                pix[m * 4 + 2] = 0;
+            }
+
+            for (m = 0; m < sc; m++) {
+                pix[m * sc * 4 + 0] = 255;
+                pix[m * sc * 4 + 1] = 0;
+                pix[m * sc * 4 + 2] = 0;
+            }
+
+            for (m = 0; m < sc; m++) {
+                pix[m * 4 + sc * 4 * (sc - 1) + 0] = 255;
+                pix[m * 4 + sc * 4 * (sc - 1) + 1] = 0;
+                pix[m * 4 + sc * 4 * (sc - 1) + 2] = 0;
+            }
+
+            for (m = 0; m < sc; m++) {
+                pix[(m * (sc * 1) + sc * 2 - 1) * 4 + 0] = 255;
+                pix[(m * (sc * 1) + sc * 2 - 1) * 4 + 1] = 0;
+                pix[(m * (sc * 1) + sc * 2 - 1) * 4 + 2] = 0;
+            }
+
+            createT = Math.round(performance.now() - wgt) / 1000;
+            creaT.innerHTML = `${createT} Seconds`;
+            console.log(`DONE! Time: ${createT} Seconds`);
+            
+
+            //Setup Time
+            lUp = performance.now();
+            int = setInterval(tick, 0);
+            dt = 0;
+        }
+
+        function stringToHash(string) {    
+            let hash = 0;
+            if (string.length == 0) return hash;
+                for (i = 0; i < string.length; i++) {
+                    char = string.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + char;
+                    hash = hash & hash;
+                } 
+                return hash;
+            }
+    </script>
