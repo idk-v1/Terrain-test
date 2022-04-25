@@ -274,17 +274,21 @@
             }
 
             function update() {
-                if (rt && x < size.value - 25 + 11) {
-                    x+=0.5;
+                if (rt && x < size.value - 25 + 12) {
+                    x+=0.25;
                 }
-                if (lf && x > 0 - 11) {
-                    x-=0.5;
+                if (lf && x > 0 - 12) {
+                    x-=0.25;
                 }
-                if (up && y > 0 - 11) {
-                    y-=0.5;
+                if (up && y > 0 - 12) {
+                    y-=0.25;
                 }
-                if (dw && y < size.value - 25 + 11) {
-                    y+=0.5;
+                if (dw && y < size.value - 25 + 12) {
+                    y+=0.25;
+                }
+                if (!rt && !lf && !dw && !up) {
+                    x = Math.round(x);
+                    y = Math.round(y);
                 }
             }
 
@@ -323,7 +327,9 @@
                 let imd = new ImageData(can, size.value);
                 ctx2.putImageData(imd, 0, 0);
                 ctx.drawImage(cnv2, -x, -y);
-                document.getElementById('siz').innerHTML = `Map Size: <span style="color: yellow">${size.value} x ${size.value}</span><br>Position: <span style="color: #00ff00">(${(x + 12).toFixed(1)}, ${(y + 12).toFixed(1)})</span>`;
+                ctx.fillStyle = "#ffffff77";
+                ctx.fillRect(12.0125, 12.0125, cnv.height / 250 / 3 + 0.0125, cnv.height / 250 / 3 + 0.0125);
+                document.getElementById('siz').innerHTML = `Map Size: <span style="color: yellow">${size.value} x ${size.value}</span><br>Position: <span style="color: #00ff00">(${(x + 13).toFixed(1)}, ${(y + 13).toFixed(1)})</span>`;
             }
 
             function s2h(string) {
