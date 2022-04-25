@@ -6,13 +6,13 @@
         <hr style="border-top: 3px solid #bbb; position: fixed; margin: 0px; top: 25px; left: 0px; width: 200px;"></hr>
 
         <!--Seed Input-->
-        <p style="margin: 0px; position: fixed; top: 30px; left: 0px; color: #fff;">Seed</p>
+        <p id="seed" style="margin: 0px; position: fixed; top: 30px; left: 0px; color: #fff;">Seed</p>
         <input id="seedIn" style="position: fixed; top: 50px; left: 0px; margin: 0px;"></input>
         <hr style="border-top: 3px solid #bbb; position: fixed; margin: 0px; top: 85px; left: 0px; width: 200px;"></hr>
 
         <!--Generation Mode-->
-        <p style="position: fixed; top: 95px; left: 0px; margin: 0px; color: #fff;">Generation Mode</p>
-        <select id="mode" style="position: fixed; top: 115px; left: 0px; margin: 0px;">
+        <p id="genT" style="position: fixed; top: 90px; left: 0px; margin: 0px; color: #fff;">Generation Mode</p>
+        <select id="mode" style="position: fixed; top: 110px; left: 0px; margin: 0px;">
             <option value="1">Normal</option>
             <option value="2">Flat</option>
             <option value="3">Ocean</option>
@@ -22,30 +22,27 @@
         <hr style="border-top: 3px solid #bbb; position: fixed; margin: 0px; top: 140px; left: 0px; width: 200px;"></hr>
 
         <!--Size Input-->
-        <p style="position: fixed; margin: 0px; top: 145px; left: 0px; color: #fff;">Map Size</p>
-        <input id="size" style="position: fixed; margin: 0px; top: 165px; left: 0px; width: 50px;"></input>
+        <p id="siz" style="position: fixed; margin: 0px; top: 145px; left: 0px; color: #fff;">Map Size</p>
+        <input id="size" value="250" style="position: fixed; margin: 0px; top: 165px; left: 0px; width: 50px;"></input>
         <hr style="border-top: 3px solid #bbb; position: fixed; margin: 0px; top: 195px; left: 0px; width: 200px;"></hr>
 
         <!--Start Button-->
-        <p style="position: fixed; margin: 0px; top: 205px; left: 0px; color: #fff;">Create World</p>
+        <p id="st" style="position: fixed; margin: 0px; top: 205px; left: 0px; color: #fff;">Create World</p>
         <button id="start" style="position: fixed; margin: 0px; top: 225px; left: 0px;">Start</button>
         <hr style="border-top: 3px solid #bbb; position: fixed; margin: 0px; top: 255px; left: 0px; width: 200px;"></hr>
 
         <div style="position: fixed; margin: 0px; left: 200px; top: 0px; height: 100%; border-left: 3px solid #bbb;"></div>
 
-        <!--Displays After Start-->
-        <p id="genT" style="position: fixed; top: 0px; left: 0px; margin: 0px; display: none; color: #fff;">Generation Time: --</p>
-        <p id="seed" style="position: fixed; top: 25px; left: 0px; margin: 0px; display: none;">Seed: </p>
-        <p id="rseed" style="position: fixed; top: 50px; left: 0px; margin: 0px; display: none;">Seed Typed: </p>
-
+        <img width="498" height="373" id="rr" src="" style="top: 0px; left: 50%; position: fixed;"</img>
         <canvas id="canv" width="100" style="position: fixed; top: 0px; left: 50%; height: 100%"></canvas>
+        <canvas id="canv2" width="1000" height="1000" style="top: 0px; left: 0px; position: fixed; display: none"></canvas>
 
         <script>
 
             //Initialize Variables
-            let fps = 0, rseed, dt, x = 0, y = 0, size, mode;
+            let fps = 0, iseed, dt, x = 0, y = 0, size, mode, speed = 0, lstU, chr, zoom = 25;
             let up = false, dw = false, lf = false, rt = false;
-            let trr = [], str = [], ent = [];
+            let trr = [], str = [], ent = [], fpss = [], can = [];
 
             //Setup Canvas
             let cnv = document.getElementById('canv');
@@ -56,6 +53,11 @@
             ctx.imageSmoothingEnabled = false;
             ctx.fillStyle = "#000000";
             ctx.fillRect(0, 0, cnv.height, cnv.height);
+            document.getElementById('rr').style.transform = "translate(-50%, 0)";
+            let cnv2 = document.getElementById('canv2');
+            cnv2.width = window.innerHeight;
+            cnv2.height = window.innerHeight;
+            let ctx2 = cnv2.getContext("2d");
 
             //Setup Input
             seed = document.getElementById('seedIn');
@@ -74,22 +76,273 @@
                 size.style.display = 'none';
                 start.style.display = 'none';
 
+                if (size.value > 750) {
+                    size.value = 750;
+                }
+                if (size.value < 25) {
+                    size.value = 25;
+                }
+
+                if (seed.value)
+                {
+                    iseed = `${seed.value}`;
+                } else {
+                    iseed = `${s2h(`${Math.random()}`)}`;
+                }
+
+                if (mode.value == 1) {
+                    trr = new Array(size.value * size.value);
+                    for (let i = 0; i < size.value * size.value; i++) {
+                        chr = `${s2h(`${iseed * Math.pow(Math.sin(i), 2) / 5 / 2 >> Math.pow(s2h(`eee${i / Math.PI}`), 2) * 2}`)}`;
+                        if (chr.charAt(3) >= 4 && chr.charAt(2) >= 4 && chr.charAt(4) != 3) {
+
+                            trr[i - size.value] = 1;
+                            trr[i - size.value - 1] = 1;
+                            trr[i - size.value + 1] = 1;
+
+                            trr[i - 1] = 1;
+                            trr[i] = 1;
+                            trr[i + 1] = 1;
+
+                            trr[Math.round(i + size.value * 1.00000000001)] = 1;
+                            trr[Math.round(i + size.value * 1.00000000001 + 1)] = 1;
+                            trr[Math.round(i + size.value * 1.00000000001 - 1)] = 1;
+
+                        } else {
+                            trr[i] = 3;
+                        }
+                    }
+
+                    for (let d = 0; d < 5; d++) {
+                        for (let i = 0; i < size.value * size.value; i++) {
+                            if (trr[i] == 3 && (trr[i + 1] == 1 && trr[i - 1] == 1 && trr[i + Math.round(size.value * 1.00000000001)] == 1)) { //<v>
+                                trr[i] = 1;
+                            }
+                            if (trr[i] == 3 && (trr[i + 1] == 1 && trr[i - 1] == 1 && trr[i - size.value] == 1)) { //<^>
+                                trr[i] = 1;
+                            }
+                            if (trr[i] == 3 && (trr[i - 1] == 1 && trr[i + Math.round(size.value * 1.00000000001)] == 1 && trr[i - size.value] == 1)) { //<^v
+                                trr[i] = 1;
+                            }
+                            if (trr[i] == 3 && (trr[i + 1] == 1 && trr[i + Math.round(size.value * 1.00000000001)] == 1 && trr[i - size.value] == 1)) { //^v>
+                                trr[i] = 1;
+                            }
+                        }
+                    }
+
+                    for (let d = 0; d < size.value * size.value; d++) {
+                        if (trr[d] == 1 && ((trr[d + 1] == 3) || (trr[d - 1] == 3) || (trr[d - size.value]) == 3|| (trr[d + Math.round(size.value * 1.0000000000001)] == 3))) {
+                            trr[d] = 2;
+                        }
+                    }
+
+                    for (let d = 0; d < size.value * size.value; d++) {
+                        if (trr[d] == 2) {
+                            trr[d] = 3;
+                        }
+                    }
+
+                    for (let d = 0; d < size.value * size.value; d++) {
+                        if (trr[d] == 1 && ((trr[d + 1] == 3) || (trr[d - 1] == 3) || (trr[d - size.value]) == 3|| (trr[d + Math.round(size.value * 1.0000000000001)] == 3))) {
+                            trr[d] = 2;
+                        }
+                    }
+
+                    for (let d = 0; d < size.value * size.value; d++) {
+                        if (trr[d] == 2) {
+                            trr[d] = 3;
+                        }
+                    }
+
+                    for (let d = 0; d < size.value * size.value; d++) {
+                        if (trr[d] == 1 && ((trr[d + 1] == 3) || (trr[d - 1] == 3) || (trr[d - size.value]) == 3|| (trr[d + Math.round(size.value * 1.0000000000001)] == 3))) {
+                            trr[d] = 2;
+                        }
+                    }
+
+                    trrB();
+                }
+                if (mode.value == 2) {
+                    trr = new Array(size.value * size.value).fill(3);
+                    trrB();
+                }
+                if (mode.value == 3) {
+                    trr = new Array(size.value * size.value).fill(1);
+                    trrB();
+                }
+                if (mode.value == 4) {
+                    trr = new Array(size.value * size.value);
+                    for (let i = 0; i < size.value * size.value; i++) {
+                        chr = `${s2h(`${iseed * i / 5 / 2 >> Math.pow(s2h(`eee${i / Math.PI}`), 2) * 2}`)}`;
+                        if (chr.charAt(3) >= 6 && chr.charAt(2) >= 2 && chr.charAt(1) != 1) {
+
+                            trr[i - size.value] = 3;
+                            trr[i - size.value - 1] = 3;
+                            trr[i - size.value + 1] = 3;
+
+                            trr[i - 1] = 3;
+                            trr[i] = 3;
+                            trr[i + 1] = 3;
+
+                            trr[Math.round(i + size.value * 1.00000000001)] = 3;
+                            trr[Math.round(i + size.value * 1.00000000001 + 1)] = 3;
+                            trr[Math.round(i + size.value * 1.00000000001 - 1)] = 3;
+
+                        } else {
+                            trr[i] = 1;
+                        }
+                    }
+
+                    for (let d = 0; d < 5; d++) {
+                        for (let i = 0; i < size.value * size.value; i++) {
+                            if (trr[i] == 3 && (trr[i + 1] == 1 && trr[i - 1] == 1 && trr[i + Math.round(size.value * 1.00000000001)] == 1)) { //<v>
+                                trr[i] = 1;
+                            }
+                            if (trr[i] == 3 && (trr[i + 1] == 1 && trr[i - 1] == 1 && trr[i - size.value] == 1)) { //<^>
+                                trr[i] = 1;
+                            }
+                            if (trr[i] == 3 && (trr[i - 1] == 1 && trr[i + Math.round(size.value * 1.00000000001)] == 1 && trr[i - size.value] == 1)) { //<^v
+                                trr[i] = 1;
+                            }
+                            if (trr[i] == 3 && (trr[i + 1] == 1 && trr[i + Math.round(size.value * 1.00000000001)] == 1 && trr[i - size.value] == 1)) { //^v>
+                                trr[i] = 1;
+                            }
+                        }
+                    }
+
+                    trrB();
+                }
+                if (mode.value == 5) {
+                    document.getElementById('rr').width = 498 * 3.25;
+                    document.getElementById('rr').height = 373 * 3.25;
+                    document.getElementById('rr').src="https://c.tenor.com/_4YgA77ExHEAAAAC/rick-roll.gif";
+                    cnv.style.display = 'none';
+                }
+
+                //Set Displays
+                if (seed.value != 0) {
+                    document.getElementById('seed').innerHTML = `Random Seed: <span style="color: red">NO</span><br>Seed: <span style="color: yellow">${iseed}</span>`;
+                } else {
+                    document.getElementById('seed').innerHTML = `Random Seed: <span style="color: #00ff00">YES</span><br>Seed: <span style="color: yellow">${iseed}</span>`;
+                }
+                document.getElementById('genT').innerHTML = `Generation Time: <span style="color: yellow">~${((performance.now() - genT + 0.001) / 1000).toFixed(3)}s</span>`;
+                document.getElementById('siz').innerHTML = `Map Size: <span style="color: yellow">${size.value} x ${size.value}</span><br>Position: <span style="color: #00ff00">(${x}, ${y})</span>`;
+                document.getElementById('st').innerHTML = `Speed: <span style="color: red">${speed}x</span>`;
+
+                //Add KeyListeners
+                document.addEventListener('keydown', function(event) {
+                    if (event.key == "d")
+                        rt = true;
+                    if (event.key == "a")
+                        lf = true;
+                    if (event.key == "w")
+                        up = true;
+                    if (event.key == "s")
+                        dw = true;
+                }, true);
+                document.addEventListener('keyup', function(event) {
+                    if (event.key == "d")
+                        rt = false;
+                    if (event.key == "a")
+                        lf = false;
+                    if (event.key == "w")
+                        up = false;
+                    if (event.key == "s")
+                        dw = false;
+                }, true);
+
+                //Prepare FPS Counter
                 setInterval(tick, 0);
+                lstU = performance.now();
                 dt = 0;
-                document.getElementById('genT').style.display = 'initial';
-                document.getElementById('genT').innerHTML = `Generation Time: ${Math.round((performance.now() - genT) * 1000) / 1000}`;
+
+                can = new Uint8ClampedArray(size.value * size.value * 4);
+                ctx.scale(cnv.height / zoom, cnv.height / zoom);
+                x = size.value / 2;
+                y = size.value / 2;
             }
 
             function tick() {
-
+                let now = performance.now();
+                dt += now - lstU;
+                lstU = now;
+                while (dt >= 1000 / 60) {
+                    dt -= 1000 / 60;
+                    update();
+                }
+                render();
             }
 
             function update() {
-
+                if (rt && x < size.value - 25 + 11) {
+                    x+=0.5;
+                }
+                if (lf && x > 0 - 11) {
+                    x-=0.5;
+                }
+                if (up && y > 0 - 11) {
+                    y-=0.5;
+                }
+                if (dw && y < size.value - 25 + 11) {
+                    y+=0.5;
+                }
             }
 
             function render() {
+                fps = Math.round(1000 / dt);
+                fpss.push(fps);
+                document.getElementById('fps').innerHTML = `FPS: <span style="color: yellow">${Math.round(fps)}</span>`;
 
+                for (let i = 0; i < can.length; i += 4) {
+                    if (trr[i / 4] == 0) {
+                        can[i + 0] = 255;
+                        can[i + 1] = 0;
+                        can[i + 2] = 0;
+                        can[i + 3] = 255;
+                    }
+                    if (trr[i / 4] == 1) {
+                        can[i + 0] = 0;
+                        can[i + 1] = 0;
+                        can[i + 2] = 200;
+                        can[i + 3] = 255;
+                    }
+                    if (trr[i / 4] == 2) {
+                        can[i + 0] = 255;
+                        can[i + 1] = 255;
+                        can[i + 2] = 100;
+                        can[i + 3] = 255;
+                    }
+                    if (trr[i / 4] == 3) {
+                        can[i + 0] = 0;
+                        can[i + 1] = 205;
+                        can[i + 2] = 75;
+                        can[i + 3] = 255;
+                    }
+                }
+
+                let imd = new ImageData(can, size.value);
+                ctx2.putImageData(imd, 0, 0);
+                ctx.drawImage(cnv2, -x, -y);
+                document.getElementById('siz').innerHTML = `Map Size: <span style="color: yellow">${size.value} x ${size.value}</span><br>Position: <span style="color: #00ff00">(${(x + 12).toFixed(1)}, ${(y + 12).toFixed(1)})</span>`;
+            }
+
+            function s2h(string) {
+                let hash = 0;
+                for (i = 0; i < string.length; i++) {
+                    char = string.charCodeAt(i);
+                    hash = ((hash << 5) - hash) - char;
+                    hash = (hash << hash / 2);
+                }
+                return hash;
+            }
+
+            function trrB() {
+                for (let i = 0; i < size.value; i++) {
+                    trr[i] = 0;                                         //Top
+                    trr[i * size.value] = 0;                            //Left
+                    trr[i + size.value * (size.value - 1)] = 0;         //Bottom
+                    trr[i * size.value + (size.value - 0.5) * 2] = 0;   //Right
+                }
             }
 
         </script>
