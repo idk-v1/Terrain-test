@@ -76,6 +76,7 @@
                 size.style.display = 'none';
                 start.style.display = 'none';
 
+                size.value *= 0.1;
                 size.value += 2;
                 if (size.value > 750) {
                     size.value = 750;
@@ -232,13 +233,13 @@
 
                 //Add KeyListeners
                 document.addEventListener('keydown', function(event) {
-                    if (event.key == "d")
+                    if (event.key == "d" || event.key == "D")
                         rt = true;
-                    if (event.key == "a")
+                    if (event.key == "a" || event.key == "A")
                         lf = true;
-                    if (event.key == "w")
+                    if (event.key == "w" || event.key == "W")
                         up = true;
-                    if (event.key == "s")
+                    if (event.key == "s" || event.key == "S")
                         dw = true;
                     if (event.key == "0")
                         zer = true;
@@ -250,13 +251,13 @@
                         thr = true;
                 }, true);
                 document.addEventListener('keyup', function(event) {
-                    if (event.key == "d")
+                    if (event.key == "d" || event.key == "D")
                         rt = false;
-                    if (event.key == "a")
+                    if (event.key == "a" || event.key == "A")
                         lf = false;
-                    if (event.key == "w")
+                    if (event.key == "w" || event.key == "W")
                         up = false;
-                    if (event.key == "s")
+                    if (event.key == "s" || event.key == "S")
                         dw = false;
                     if (event.key == "0")
                         zer = false;
@@ -275,8 +276,8 @@
 
                 can = new Uint8ClampedArray(size.value * size.value * 4);
                 ctx.scale(cnv.height / zoom, cnv.height / zoom);
-                x = size.value / 2;
-                y = size.value / 2;
+                x = size.value / 2 - 13;
+                y = size.value / 2 - 13;
             }
 
             function tick() {
