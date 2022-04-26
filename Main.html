@@ -35,7 +35,7 @@
 
         <img width="498" height="373" id="rr" src="" style="top: 0px; left: 50%; position: fixed;"</img>
         <canvas id="canv" width="100" style="position: fixed; top: 0px; left: 50%; height: 100%"></canvas>
-        <canvas id="canv2" width="1000" height="1000" style="top: 0px; left: 0px; position: fixed; display: none"></canvas>
+        <canvas id="canv2" width="10000" height="10000" style="top: 0px; left: 0px; position: fixed; display: none"></canvas>
 
         <script>
 
@@ -55,8 +55,6 @@
             ctx.fillRect(0, 0, cnv.height, cnv.height);
             document.getElementById('rr').style.transform = "translate(-50%, 0)";
             let cnv2 = document.getElementById('canv2');
-            cnv2.width = window.innerHeight;
-            cnv2.height = window.innerHeight;
             let ctx2 = cnv2.getContext("2d");
 
             //Setup Input
@@ -77,9 +75,10 @@
                 start.style.display = 'none';
 
                 size.value *= 0.1;
+                size.value = Math.round(size.value);
                 size.value += 2;
-                if (size.value > 750) {
-                    size.value = 750;
+                if (size.value > 2502) {
+                    size.value = 2502;
                 }
                 if (size.value < 27) {
                     size.value = 27;
@@ -175,8 +174,8 @@
                 if (mode.value == 4) {
                     trr = new Array(size.value * size.value);
                     for (let i = 0; i < size.value * size.value; i++) {
-                        chr = `${s2h(`${iseed * i / 5 / 2 >> Math.pow(s2h(`eee${i / Math.PI}`), 2) * 2}`)}`;
-                        if (chr.charAt(3) >= 6 && chr.charAt(2) >= 2 && chr.charAt(1) != 1) {
+                        chr = `${s2h(`${iseed * Math.pow(Math.sin(i), 2) / 5 / 2 >> Math.pow(s2h(`eee${i / Math.PI}`), 2) * 2}`)}`;
+                        if (chr.charAt(3) >= 4 && chr.charAt(2) >= 4 && chr.charAt(4) != 3) {
 
                             trr[i - size.value] = 3;
                             trr[i - size.value - 1] = 3;
@@ -197,18 +196,48 @@
 
                     for (let d = 0; d < 5; d++) {
                         for (let i = 0; i < size.value * size.value; i++) {
-                            if (trr[i] == 3 && (trr[i + 1] == 1 && trr[i - 1] == 1 && trr[i + Math.round(size.value * 1.00000000001)] == 1)) { //<v>
-                                trr[i] = 1;
+                            if (trr[i] == 1 && (trr[i + 1] == 3 && trr[i - 1] == 3 && trr[i + Math.round(size.value * 1.00000000001)] == 3)) { //<v>
+                                trr[i] = 3;
                             }
-                            if (trr[i] == 3 && (trr[i + 1] == 1 && trr[i - 1] == 1 && trr[i - size.value] == 1)) { //<^>
-                                trr[i] = 1;
+                            if (trr[i] == 1 && (trr[i + 1] == 3 && trr[i - 1] == 3 && trr[i - size.value] == 3)) { //<^>
+                                trr[i] = 3;
                             }
-                            if (trr[i] == 3 && (trr[i - 1] == 1 && trr[i + Math.round(size.value * 1.00000000001)] == 1 && trr[i - size.value] == 1)) { //<^v
-                                trr[i] = 1;
+                            if (trr[i] == 1 && (trr[i - 1] == 3 && trr[i + Math.round(size.value * 1.00000000001)] == 3 && trr[i - size.value] == 3)) { //<^v
+                                trr[i] = 3;
                             }
-                            if (trr[i] == 3 && (trr[i + 1] == 1 && trr[i + Math.round(size.value * 1.00000000001)] == 1 && trr[i - size.value] == 1)) { //^v>
-                                trr[i] = 1;
+                            if (trr[i] == 1 && (trr[i + 1] == 3 && trr[i + Math.round(size.value * 1.00000000001)] == 3 && trr[i - size.value] == 3)) { //^v>
+                                trr[i] = 3;
                             }
+                        }
+                    }
+
+                    for (let d = 0; d < size.value * size.value; d++) {
+                        if (trr[d] == 3 && ((trr[d + 1] == 1) || (trr[d - 1] == 1) || (trr[d - size.value]) == 1|| (trr[d + Math.round(size.value * 1.0000000000001)] == 1))) {
+                            trr[d] = 2;
+                        }
+                    }
+
+                    for (let d = 0; d < size.value * size.value; d++) {
+                        if (trr[d] == 2) {
+                            trr[d] = 1;
+                        }
+                    }
+
+                    for (let d = 0; d < size.value * size.value; d++) {
+                        if (trr[d] == 3 && ((trr[d + 1] == 1) || (trr[d - 1] == 1) || (trr[d - size.value]) == 1|| (trr[d + Math.round(size.value * 1.0000000000001)] == 1))) {
+                            trr[d] = 2;
+                        }
+                    }
+
+                    for (let d = 0; d < size.value * size.value; d++) {
+                        if (trr[d] == 2) {
+                            trr[d] = 1;
+                        }
+                    }
+
+                    for (let d = 0; d < size.value * size.value; d++) {
+                        if (trr[d] == 3 && ((trr[d + 1] == 1) || (trr[d - 1] == 1) || (trr[d - size.value]) == 1|| (trr[d + Math.round(size.value * 1.0000000000001)] == 1))) {
+                            trr[d] = 2;
                         }
                     }
 
@@ -275,7 +304,6 @@
                 dt = 0;
 
                 can = new Uint8ClampedArray(size.value * size.value * 4);
-                ctx.scale(cnv.height / zoom, cnv.height / zoom);
                 x = size.value / 2 - 13;
                 y = size.value / 2 - 13;
             }
@@ -360,9 +388,12 @@
 
                 let imd = new ImageData(can, size.value);
                 ctx2.putImageData(imd, 0, 0);
+                ctx.scale(cnv.height / zoom, cnv.height / zoom);
                 ctx.drawImage(cnv2, -x, -y);
-                ctx.fillStyle = "#ffffff77";
-                ctx.fillRect(12.0125, 12.0125, cnv.height / 250 / 3, cnv.height / 250 / 3);
+                ctx.fillStyle = "#000000ff";
+                ctx.scale(zoom / cnv.height, zoom / cnv.height);
+                ctx.fillRect(cnv.width / 2 - (cnv.height / 25) / 2, cnv.height / 2 - 1, (cnv.height / 25), 2);
+                ctx.fillRect(cnv.height / 2 - 1, cnv.width / 2 - (cnv.height / 25) / 2, 2, (cnv.height / 25));
                 document.getElementById('siz').innerHTML = `Map Size: <span style="color: yellow">${size.value - 2} x ${size.value - 2}</span><br>Position: <span style="color: #00ff00">(${(x + 12).toFixed(1)}, ${(y + 12).toFixed(1)})</span>`;
             }
 
