@@ -41,7 +41,8 @@
 
             //Initialize Variables
             let fps = 0, iseed, dt, x = 0, y = 0, size, mode, speed = 0, lstU, chr, zoom = 25;
-            let up = false, dw = false, lf = false, rt = false, zer = false, one = false, two = false, thr = false, zmi = false, zmo = false, zmz = false, zmzi = false;
+            let up = false, dw = false, lf = false, rt = false, zer = false, one = false, two = false, thr = false, 
+            zmi = false, zmo = false, zmz = false, zmzi = false, spp = false, started = false, bs = false;
             let trr = [], str = [], ent = [], fpss = [], can = [];
 
             //Setup Canvas
@@ -64,9 +65,15 @@
             size = document.getElementById('size');
             start = document.getElementById('start');
             start.addEventListener('click', setup);
+            document.addEventListener('keydown', function(event) {
+                if (event.key == "Enter" && !started) {
+                    setup();
+                    started = true;
+                }
+            })
 
             function setup() {
-
+                started = true;
                 let genT = performance.now();
 
                 //Remove Creation Elements
@@ -77,7 +84,6 @@
 
                 let tmpSz = size.value / 1;
                 size.value = tmpSz + 2;
-                console.log(size.value);
                 if (size.value > 2502) {
                     size.value = 2502;
                 }
@@ -317,13 +323,13 @@
                         up = true;
                     if (event.key == "s" || event.key == "S")
                         dw = true;
-                    if (event.key == "0")
+                    if (event.key == "0" || event.key == ")")
                         zer = true;
-                    if (event.key == "1")
+                    if (event.key == "1" || event.key == "!")
                         one = true;
-                    if (event.key == "2")
+                    if (event.key == "2" || event.key == "@")
                         two = true;
-                    if (event.key == "3")
+                    if (event.key == "3" || event.key == "#")
                         thr = true;
                     if (event.key == "ArrowLeft")
                         zmi = true;
@@ -333,6 +339,10 @@
                         zmzi = true;
                     if (event.key == "ArrowDown")
                         zmz = true;
+                    if (event.key == "/")
+                        spp = true;
+                    if (event.shiftKey)
+                        bs = true;
                 }, true);
                 document.addEventListener('keyup', function(event) {
                     if (event.key == "d" || event.key == "D")
@@ -343,13 +353,13 @@
                         up = false;
                     if (event.key == "s" || event.key == "S")
                         dw = false;
-                    if (event.key == "0")
+                    if (event.key == "0" || event.key == ")")
                         zer = false;
-                    if (event.key == "1")
+                    if (event.key == "1" || event.key == "!")
                         one = false;
-                    if (event.key == "2")
+                    if (event.key == "2" || event.key == "@")
                         two = false;
-                    if (event.key == "3")
+                    if (event.key == "3" || event.key == "#")
                         thr = false;
                     if (event.key == "ArrowLeft")
                         zmi = false;
@@ -359,6 +369,10 @@
                         zmzi = false;
                     if (event.key == "ArrowDown")
                         zmz = false;
+                    if (event.key == "/")
+                        spp = false;
+                    if (!event.shiftKey)
+                        bs = false;
                 }, true);
 
                 //Prepare FPS Counter
@@ -369,6 +383,9 @@
                 can = new Uint8ClampedArray(size.value * size.value * 4);
                 x = size.value / 2 - 13;
                 y = size.value / 2 - 13;
+
+                ent.push(new ents(200, 200, 2, 2));
+                ent.push(new ents(300, 300, 3, 3));
             }
 
             function tick() {
@@ -383,73 +400,89 @@
             }
 
             function update() {
-                if (zmzi && zoom != 25) {
+
+                //Zoom
+                if (zmzi && zoom != 25)
                     zoom = 25;
-                }
-
-                if (zmz && zoom != size.value) {
+                if (zmz && zoom != size.value)
                     zoom = size.value;
-                }
-
-                if (zmo && zoom < size.value) {
+                if (zmo && zoom < size.value)
                     zoom++;
-                }
-
                 if (zmi && zoom > 25)
                     zoom--;
 
-                if (zer && zoom == 25) {
+                //Placing
+                if (zer && zoom == 25)
                     trr[(Math.round(x) + 12) + ((Math.round(y) + 12) * size.value)] = 0;
-                }
-
-                if (one && zoom == 25) {
+                if (one && zoom == 25)
                     trr[(Math.round(x) + 12) + ((Math.round(y) + 12) * size.value)] = 1;
-                }
-
-                if (two && zoom == 25) {
+                if (two && zoom == 25)
                     trr[(Math.round(x) + 12) + ((Math.round(y) + 12) * size.value)] = 2;
-                }
-
-                if (thr && zoom == 25) {
+                if (thr && zoom == 25)
                     trr[(Math.round(x) + 12) + ((Math.round(y) + 12) * size.value)] = 3;
+
+                if (bs) {
+                    if (zer && zoom == 25) {
+                        trr[(Math.round(x) + 13) + ((Math.round(y) + 12) * size.value)] = 0;
+                        trr[(Math.round(x) + 11) + ((Math.round(y) + 12) * size.value)] = 0;
+                        trr[(Math.round(x) + 12) + ((Math.round(y) + 11) * size.value)] = 0;
+                        trr[(Math.round(x) + 12) + ((Math.round(y) + 13) * size.value)] = 0;
+                    }
+                    if (one && zoom == 25) {
+                        trr[(Math.round(x) + 13) + ((Math.round(y) + 12) * size.value)] = 1;
+                        trr[(Math.round(x) + 11) + ((Math.round(y) + 12) * size.value)] = 1;
+                        trr[(Math.round(x) + 12) + ((Math.round(y) + 11) * size.value)] = 1;
+                        trr[(Math.round(x) + 12) + ((Math.round(y) + 13) * size.value)] = 1;
+                    }
+                    if (two && zoom == 25) {
+                        trr[(Math.round(x) + 13) + ((Math.round(y) + 12) * size.value)] = 2;
+                        trr[(Math.round(x) + 11) + ((Math.round(y) + 12) * size.value)] = 2;
+                        trr[(Math.round(x) + 12) + ((Math.round(y) + 11) * size.value)] = 2;
+                        trr[(Math.round(x) + 12) + ((Math.round(y) + 13) * size.value)] = 2;
+                    }
+                    if (thr && zoom == 25) {
+                        trr[(Math.round(x) + 13) + ((Math.round(y) + 12) * size.value)] = 3;
+                        trr[(Math.round(x) + 11) + ((Math.round(y) + 12) * size.value)] = 3;
+                        trr[(Math.round(x) + 12) + ((Math.round(y) + 11) * size.value)] = 3;
+                        trr[(Math.round(x) + 12) + ((Math.round(y) + 13) * size.value)] = 3;
+                    }
+                    trrB();
                 }
 
-                if (rt && x < size.value - 25 + 11) {
+                //Movement
+                if (rt && x < size.value - 25 + 11)
                     x+=zoom / 100;
-                }
-                if (lf && x > 0 - 11) {
+                if (lf && x > 0 - 11)
                     x-=zoom / 100;
-                }
-                if (up && y > 0 - 11) {
+                if (up && y > 0 - 11)
                     y-=zoom / 100;
-                }
-                if (dw && y < size.value - 25 + 11) {
+                if (dw && y < size.value - 25 + 11)
                     y+=zoom / 100;
-                }
                 if (!rt && !lf && !dw && !up) {
                     x = Math.round(x);
                     y = Math.round(y);
                 }
-
-                if (x > size.value - 25 + 11) {
+                if (x > size.value - 25 + 11)
                     x=size.value-14;
-                }
-                if (x < 0 - 11) {
+                if (x < 0 - 11)
                     x=-11;
-                }
-                if (y < 0 - 11) {
+                if (y < 0 - 11)
                     y=-11;
-                }
-                if (y > size.value - 25 + 11) {
+                if (y > size.value - 25 + 11)
                     y=size.value-14;
-                }
             }
 
             function render() {
-                fps = Math.round(1000 / dt);
-                fpss.push(fps);
-                document.getElementById('fps').innerHTML = `FPS: <span style="color: yellow">${Math.round(fps)}</span>`;
 
+                //FPS
+                fps = Math.round(1000 / dt);
+                if (fps > 60)
+                    document.getElementById('fps').innerHTML = `FPS: <span style="color: yellow">60+</span>`;
+                if (fps <= 60)
+                    document.getElementById('fps').innerHTML = `FPS: <span style="color: yellow">${Math.round(fps)}</span>`;
+                document.getElementById('siz').innerHTML = `Map Size: <span style="color: yellow">${size.value - 2} x ${size.value - 2}</span><br>Position: <span style="color: #00ff00">(${(x + 12).toFixed(1)}, ${(y + 12).toFixed(1)})</span>`;
+
+                //Draw Terrain
                 for (let i = 0; i < can.length; i += 4) {
                     if (trr[i / 4] == 0) {
                         can[i + 0] = 255;
@@ -477,6 +510,10 @@
                     }
                 }
 
+                //Draw Entities
+                
+
+                //Draw to Screen
                 ctx.fillStyle = "#000000ff";
                 ctx.fillRect(0, 0, cnv.width, cnv.height);
                 let imd = new ImageData(can, size.value);
@@ -484,24 +521,23 @@
                 ctx.scale(cnv.height / zoom, cnv.height / zoom);
                 ctx.drawImage(cnv2, -x - (12.5 - zoom / 2), -y - (12.5 - zoom / 2));
                 ctx.scale(zoom / cnv.height, zoom / cnv.height);
+
+                //Draw Crosshair
+                let inv = ctx.getImageData(cnv.width / 2, cnv.height / 2, 1, 1).data;
                 if (zoom == 25) {
-                    let inv = ctx.getImageData(cnv.width / 2, cnv.height / 2, 1, 1).data;
                     ctx.fillStyle = `rgb(${255 - inv[0]}, ${255 - inv[1]}, ${255 - inv[2]}, 255)`;
                     ctx.fillRect(cnv.width / 2 - (cnv.height / 25) / 2, cnv.height / 2 - 1, (cnv.height / 25), 2);
                     ctx.fillRect(cnv.height / 2 - 1, cnv.width / 2 - (cnv.height / 25) / 2, 2, (cnv.height / 25));
-                }
-                if (zoom != 25) {
-                    let inv = ctx.getImageData(cnv.width / 2, cnv.height / 2, 1, 1).data;
+                } else {
                     ctx.strokeStyle = `rgb(${255 - inv[0]}, ${255 - inv[1]}, ${255 - inv[2]}, 255)`;
-                    ctx.beginPath();
                     ctx.lineWidth = 2;
+                    ctx.beginPath();
                     ctx.moveTo(cnv.width / 2 - (cnv.height / 37) / 2, cnv.width / 2 - (cnv.height / 37) / 2);
                     ctx.lineTo(cnv.width / 2 + (cnv.height / 37) / 2, cnv.width / 2 + (cnv.height / 37) / 2);
                     ctx.moveTo(cnv.width / 2 + (cnv.height / 37) / 2, cnv.width / 2 - (cnv.height / 37) / 2);
                     ctx.lineTo(cnv.width / 2 - (cnv.height / 37) / 2, cnv.width / 2 + (cnv.height / 37) / 2);
                     ctx.stroke();
                 }
-                document.getElementById('siz').innerHTML = `Map Size: <span style="color: yellow">${size.value - 2} x ${size.value - 2}</span><br>Position: <span style="color: #00ff00">(${(x + 12).toFixed(1)}, ${(y + 12).toFixed(1)})</span>`;
             }
 
             function s2h(string) {
@@ -516,11 +552,18 @@
 
             function trrB() {
                 for (let i = 0; i < size.value; i++) {
-                    trr[i] = 0;                                         //Top
-                    trr[i * size.value] = 0;                            //Left
-                    trr[i + size.value * (size.value - 1)] = 0;         //Bottom
-                    trr[i * size.value + (size.value - 0.5) * 2] = 0;   //Right
+                    trr[i] = 0;
+                    trr[i * size.value] = 0;
+                    trr[i + size.value * (size.value - 1)] = 0;
+                    trr[i * size.value + (size.value - 0.5) * 2] = 0;
                 }
+            }
+
+            function ents(x, y, h, a) {
+                ent.push(x);
+                ent.push(y);
+                ent.push(h);
+                ent.push(a);
             }
 
         </script>
