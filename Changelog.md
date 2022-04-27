@@ -1,4 +1,4 @@
-## --v000.01.00--
+## v000.01.00
 - ### BUG FIXES
 
 - ### FEATURE CHANGES
