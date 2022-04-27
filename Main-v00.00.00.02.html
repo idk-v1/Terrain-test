@@ -336,12 +336,12 @@
                     zoom = size.value;
                 }
 
-                if (zmo && zoom != 100) {
-                    zoom = 100;
+                if (zmo && zoom <= size.value) {
+                    zoom++;
                 }
 
-                if (zmi && zoom != 25)
-                    zoom = 25;
+                if (zmi && zoom >= 25)
+                    zoom--;
 
                 if (zer && zoom == 25) {
                     trr[(Math.round(x) + 12) + ((Math.round(y) + 12) * size.value)] = 0;
