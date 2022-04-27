@@ -41,7 +41,7 @@
 
             //Initialize Variables
             let fps = 0, iseed, dt, x = 0, y = 0, size, mode, speed = 0, lstU, chr, zoom = 25;
-            let up = false, dw = false, lf = false, rt = false, zer = false, one = false, two = false, thr = false, zmi = false, zmo = false, zmz = false;
+            let up = false, dw = false, lf = false, rt = false, zer = false, one = false, two = false, thr = false, zmi = false, zmo = false, zmz = false, zmzi = false;
             let trr = [], str = [], ent = [], fpss = [], can = [];
 
             //Setup Canvas
@@ -54,6 +54,7 @@
             ctx.fillStyle = "#000000";
             ctx.fillRect(0, 0, cnv.height, cnv.height);
             document.getElementById('rr').style.transform = "translate(-50%, 0)";
+            cnv.style.cursor = "none";
             let cnv2 = document.getElementById('canv2');
             let ctx2 = cnv2.getContext("2d");
 
@@ -94,8 +95,8 @@
                 if (mode.value == 1) {
                     trr = new Array(size.value * size.value);
                     for (let i = 0; i < size.value * size.value; i++) {
-                        chr = `${s2h(`${iseed * Math.pow(Math.sin(i), 2) / 5 / 2 >> Math.pow(s2h(`eee${i / Math.PI}`), 2) * 2}`)}`;
-                        if (chr.charAt(3) >= 4 && chr.charAt(2) >= 4 && chr.charAt(4) != 3) {
+                        chr = `${s2h(`${iseed * Math.pow(Math.sin(i), 2) / 3 / 2 >> Math.pow(s2h(`eee${i / Math.PI}`), 2) * 2}`)}`;
+                        if (chr.charAt(3) >= 1 && chr.charAt(2) >= 1 && chr.charAt(4) >= 2 && chr.charAt(5) >= 3) {
 
                             trr[i - size.value] = 1;
                             trr[i - size.value - 1] = 1;
@@ -112,6 +113,23 @@
                         } else {
                             trr[i] = 3;
                         }
+                    }
+
+                    for (let d = 0; d < 5; d++) {
+                    for (let i = 0; i < size.value * size.value; i++) {
+                        if (trr[i] == 3 && trr[i + Math.round(size.value * 2.00000000001)] == 3) {
+                            trr[i + Math.round(size.value * 1.00000000001)] = 3;
+                        }
+                        if (trr[i] == 3 && trr[i - size.value * 2] == 3) {
+                            trr[i - size.value] = 3;
+                        }
+                        if (trr[i] == 3 && trr[i - 2] == 3) {
+                            trr[i - 1] = 3;
+                        }
+                        if (trr[i] == 3 && trr[i + 2] == 3) {
+                            trr[i + 1] = 3;
+                        }
+                    }
                     }
 
                     for (let d = 0; d < 5; d++) {
@@ -147,6 +165,35 @@
                         if (trr[d] == 1 && ((trr[d + 1] == 3) || (trr[d - 1] == 3) || (trr[d - size.value]) == 3|| (trr[d + Math.round(size.value * 1.0000000000001)] == 3))) {
                             trr[d] = 2;
                         }
+                    }
+
+                    for (let d = 0; d < size.value * size.value; d++) {
+                        if (trr[d] == 2) {
+                            trr[d] = 3;
+                        }
+                    }
+
+                    for (let d = 0; d < size.value * size.value; d++) {
+                        if (trr[d] == 1 && ((trr[d + 1] == 3) || (trr[d - 1] == 3) || (trr[d - size.value]) == 3|| (trr[d + Math.round(size.value * 1.0000000000001)] == 3))) {
+                            trr[d] = 2;
+                        }
+                    }
+
+                    for (let d = 0; d < 5; d++) {
+                    for (let i = 0; i < size.value * size.value; i++) {
+                        if (trr[i] == 2 && trr[i + Math.round(size.value * 2.00000000001)] == 2) {
+                            trr[i + Math.round(size.value * 1.00000000001)] = 2;
+                        }
+                        if (trr[i] == 2 && trr[i - size.value * 2] == 2) {
+                            trr[i - size.value] = 2;
+                        }
+                        if (trr[i] == 2 && trr[i - 2] == 2) {
+                            trr[i - 1] = 2;
+                        }
+                        if (trr[i] == 2 && trr[i + 2] == 2) {
+                            trr[i + 1] = 2;
+                        }
+                    }
                     }
 
                     for (let d = 0; d < size.value * size.value; d++) {
@@ -278,11 +325,13 @@
                         two = true;
                     if (event.key == "3")
                         thr = true;
-                    if (event.key == "z")
+                    if (event.key == "ArrowLeft")
                         zmi = true;
-                    if (event.key == "x")
+                    if (event.key == "ArrowRight")
                         zmo = true;
-                    if (event.key == "c")
+                    if (event.key == "ArrowUp")
+                        zmzi = true;
+                    if (event.key == "ArrowDown")
                         zmz = true;
                 }, true);
                 document.addEventListener('keyup', function(event) {
@@ -302,11 +351,13 @@
                         two = false;
                     if (event.key == "3")
                         thr = false;
-                    if (event.key == "z")
+                    if (event.key == "ArrowLeft")
                         zmi = false;
-                    if (event.key == "x")
+                    if (event.key == "ArrowRight")
                         zmo = false;
-                    if (event.key == "c")
+                    if (event.key == "ArrowUp")
+                        zmzi = false;
+                    if (event.key == "ArrowDown")
                         zmz = false;
                 }, true);
 
@@ -332,15 +383,19 @@
             }
 
             function update() {
+                if (zmzi && zoom != 25) {
+                    zoom = 25;
+                }
+
                 if (zmz && zoom != size.value) {
                     zoom = size.value;
                 }
 
-                if (zmo && zoom <= size.value) {
+                if (zmo && zoom < size.value) {
                     zoom++;
                 }
 
-                if (zmi && zoom >= 25)
+                if (zmi && zoom > 25)
                     zoom--;
 
                 if (zer && zoom == 25) {
@@ -374,6 +429,19 @@
                 if (!rt && !lf && !dw && !up) {
                     x = Math.round(x);
                     y = Math.round(y);
+                }
+
+                if (x > size.value - 25 + 11) {
+                    x=size.value-14;
+                }
+                if (x < 0 - 11) {
+                    x=-11;
+                }
+                if (y < 0 - 11) {
+                    y=-11;
+                }
+                if (y > size.value - 25 + 11) {
+                    y=size.value-14;
                 }
             }
 
@@ -421,6 +489,17 @@
                     ctx.fillStyle = `rgb(${255 - inv[0]}, ${255 - inv[1]}, ${255 - inv[2]}, 255)`;
                     ctx.fillRect(cnv.width / 2 - (cnv.height / 25) / 2, cnv.height / 2 - 1, (cnv.height / 25), 2);
                     ctx.fillRect(cnv.height / 2 - 1, cnv.width / 2 - (cnv.height / 25) / 2, 2, (cnv.height / 25));
+                }
+                if (zoom != 25) {
+                    let inv = ctx.getImageData(cnv.width / 2, cnv.height / 2, 1, 1).data;
+                    ctx.strokeStyle = `rgb(${255 - inv[0]}, ${255 - inv[1]}, ${255 - inv[2]}, 255)`;
+                    ctx.beginPath();
+                    ctx.lineWidth = 2;
+                    ctx.moveTo(cnv.width / 2 - (cnv.height / 37) / 2, cnv.width / 2 - (cnv.height / 37) / 2);
+                    ctx.lineTo(cnv.width / 2 + (cnv.height / 37) / 2, cnv.width / 2 + (cnv.height / 37) / 2);
+                    ctx.moveTo(cnv.width / 2 + (cnv.height / 37) / 2, cnv.width / 2 - (cnv.height / 37) / 2);
+                    ctx.lineTo(cnv.width / 2 - (cnv.height / 37) / 2, cnv.width / 2 + (cnv.height / 37) / 2);
+                    ctx.stroke();
                 }
                 document.getElementById('siz').innerHTML = `Map Size: <span style="color: yellow">${size.value - 2} x ${size.value - 2}</span><br>Position: <span style="color: #00ff00">(${(x + 12).toFixed(1)}, ${(y + 12).toFixed(1)})</span>`;
             }
