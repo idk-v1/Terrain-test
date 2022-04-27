@@ -4,7 +4,7 @@
 
 -- FEATURE CHANGES
 - Added a crosshair.
-- Added default zoom, zoom out, max zoom.
+- Added zoom in, zoom out, max zoom.
 - Increased max world size to 2500x2500.
 
 -- KNOWN ISSUES
