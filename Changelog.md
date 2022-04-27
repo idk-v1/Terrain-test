@@ -1,10 +1,9 @@
--- v000.01.00
--- BUG FIXES
-- 
+# v000.01.00
+- ## BUG FIXES
 
--- FEATURE CHANGES
-- Added zoom in, zoom out, max zoom, min zoom
-- Added large brush
+- ## FEATURE CHANGES
+  - Added zoom in, zoom out, max zoom, min zoom
+  - Added large brush
 
--- KNOWN ISSUES
-- Random redrawing of the map offsets some pixels (visual only).
+- ## KNOWN ISSUES
+  - Random redrawing of the map offsets some pixels (visual only).
