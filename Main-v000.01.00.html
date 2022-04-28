@@ -31,6 +31,7 @@
         <button id="start" style="position: fixed; margin: 0px; top: 225px; left: 0px;">Start</button>
         <hr style="border-top: 3px solid #bbb; position: fixed; margin: 0px; top: 255px; left: 0px; width: 200px;"></hr>
 
+        <!--Misc. Things-->
         <div style="position: fixed; margin: 0px; left: 200px; top: 0px; height: 100%; border-left: 3px solid #bbb;"></div>
 
         <img width="498" height="373" id="rr" src="" style="top: 0px; left: 50%; position: fixed;"</img>
@@ -40,360 +41,249 @@
         <script>
 
             //Initialize Variables
-            let fps = 0, iseed, dt, x = 0, y = 0, size, mode, speed = 0, lstU, chr, zoom = 25;
-            let up = false, dw = false, lf = false, rt = false, zer = false, one = false, two = false, thr = false, 
-            zmi = false, zmo = false, zmz = false, zmzi = false, spp = false, started = false, bs = false;
-            let trr = [], str = [], ent = [], fpss = [], can = [];
+            let fps, seedFinal, deltaTime, x, y, size, mode, speed = 0, lastUpdate, mathString, zoom = 25;
+            let up = false, down = false, left = false, right = false,
+            zero = false, one = false, two = false, three = false, 
+            zoomIn = false, zoomOut = false, zoomMax = false, zoomMin = false, 
+            spp = false, started = false, largeBrush = false;
+            let terrain = [], structures = [], entities = [], canvas = [];
 
             //Setup Canvas
             let cnv = document.getElementById('canv');
             cnv.width = window.innerHeight;
             cnv.height = window.innerHeight;
             cnv.style.transform = "translate(-50%, 0)";
+            cnv.style.cursor = "none";
+
             let ctx = cnv.getContext("2d");
             ctx.imageSmoothingEnabled = false;
             ctx.fillStyle = "#000000";
             ctx.fillRect(0, 0, cnv.height, cnv.height);
-            document.getElementById('rr').style.transform = "translate(-50%, 0)";
-            cnv.style.cursor = "none";
+
             let cnv2 = document.getElementById('canv2');
             let ctx2 = cnv2.getContext("2d");
+
+            document.getElementById('rr').style.transform = "translate(-50%, 0)";
+
+            let tl, tm, tr;
+            let ml, mm, mr;
+            let bl, bm, br;
+            let sz2;
 
             //Setup Input
             seed = document.getElementById('seedIn');
             mode = document.getElementById('mode');
             size = document.getElementById('size');
+
             start = document.getElementById('start');
             start.addEventListener('click', setup);
             document.addEventListener('keydown', function(event) {
-                if (event.key == "Enter" && !started) {
+                if (event.key == "Enter" && !started)
                     setup();
-                    started = true;
-                }
             })
 
             function setup() {
-                started = true;
-                let genT = performance.now();
+                let genT = performance.now(); started = true;
 
                 //Remove Creation Elements
-                seed.style.display = 'none';
-                mode.style.display = 'none';
-                size.style.display = 'none';
-                start.style.display = 'none';
+                seed.style.display = 'none'; mode.style.display = 'none'; size.style.display = 'none'; start.style.display = 'none';
 
-                let tmpSz = size.value / 1;
-                size.value = tmpSz + 2;
-                if (size.value > 2502) {
-                    size.value = 2502;
-                }
-                if (size.value < 27) {
-                    size.value = 27;
-                }
-
-                if (seed.value)
-                {
-                    iseed = `${seed.value}`;
-                } else {
-                    iseed = `${s2h(`${Math.random()}`)}`;
-                }
+                //Set Size
+                let tmpSz = size.value / 1; size.value = tmpSz + 2;
+                if (size.value > 2502) size.value = 2502;
+                if (size.value < 27) size.value = 27;
+                if (seed.value) seedFinal = `${seed.value}`;
+                else seedFinal = `${s2h(`${Math.random()}`)}`;
+                tl = -size.value - 1; tm = -size.value - 0; tr = -size.value + 1;
+                ml = -1; mm = 0; mr = 1;
+                bl = size.value - 1; bm = size.value - 0; br = size.value + 1;
+                sz2 = size.value * size.value;
 
                 if (mode.value == 1) {
-                    trr = new Array(size.value * size.value);
-                    for (let i = 0; i < size.value * size.value; i++) {
-                        chr = `${s2h(`${iseed * Math.pow(Math.sin(i), 2) / 3 / 2 >> Math.pow(s2h(`eee${i / Math.PI}`), 2) * 2}`)}`;
-                        if (chr.charAt(3) >= 1 && chr.charAt(2) >= 1 && chr.charAt(4) >= 2 && chr.charAt(5) >= 3) {
 
-                            trr[i - size.value] = 1;
-                            trr[i - size.value - 1] = 1;
-                            trr[i - size.value + 1] = 1;
+                    //Land or Water
+                    terrain = new Array(sz2);
+                    for (let i = 0; i < sz2; i++) {
+                        mathString = `${s2h(`${seedFinal * Math.pow(Math.sin(i), 2) / 3 / 2 >> Math.pow(s2h(`eee${i / Math.PI}`), 2) * 2}`)}`;
+                        if (mathString.charAt(3) >= 1 && mathString.charAt(2) >= 1 && mathString.charAt(4) >= 2 && mathString.charAt(5) >= 3) {
+                            terrain[i + tl] = 1; terrain[i + tm] = 1; terrain[i + tr] = 1;
+                            terrain[i + ml] = 1; terrain[i + mm] = 1; terrain[i + mr] = 1;
+                            terrain[i + bl] = 1; terrain[i + bm] = 1; terrain[i + br] = 1;
+                        } else terrain[i + mm] = 3;
+                    }
 
-                            trr[i - 1] = 1;
-                            trr[i] = 1;
-                            trr[i + 1] = 1;
+                    //Connect Land
+                    for (let i = 0; i < sz2; i++) {
+                        if (terrain[i + mm] == 3 && terrain[i + bm * 2] == 3) terrain[i + bm] = 3;
+                        if (terrain[i + mm] == 3 && terrain[i + tm * 2] == 3) terrain[i + tm] = 3;
+                        if (terrain[i + mm] == 3 && terrain[i + ml * 2] == 3) terrain[i + ml] = 3;
+                        if (terrain[i + mm] == 3 && terrain[i + mr * 2] == 3) terrain[i + mr] = 3;
+                    }
 
-                            trr[Math.round(i + size.value * 1.00000000001)] = 1;
-                            trr[Math.round(i + size.value * 1.00000000001 + 1)] = 1;
-                            trr[Math.round(i + size.value * 1.00000000001 - 1)] = 1;
+                    //Remove 1x1s
+                    for (let d = 0; d < 5; d++)
+                        for (let i = 0; i < sz2; i++) {
+                            if (terrain[i + mm] == 3 && (terrain[i + mr] == 1 && terrain[i + ml] == 1 && terrain[i + bm] == 1)) terrain[i + mm] = 1;
+                            if (terrain[i + mm] == 3 && (terrain[i + ml] == 1 && terrain[i + mr] == 1 && terrain[i + tm] == 1)) terrain[i + mm] = 1;
+                            if (terrain[i + mm] == 3 && (terrain[i + ml] == 1 && terrain[i + bm] == 1 && terrain[i + tm] == 1)) terrain[i + mm] = 1;
+                            if (terrain[i + mm] == 3 && (terrain[i + mr] == 1 && terrain[i + bm] == 1 && terrain[i + tm] == 1)) terrain[i + mm] = 1;
+                        }   
 
-                        } else {
-                            trr[i] = 3;
+                    //Expand Islands
+                    for (let d = 0; d < 3; d++) {
+                        for (let i = 0; i < sz2; i++)
+                            if (terrain[i + mm] == 1 && ((terrain[i + mr] == 3) || (terrain[i + ml] == 3) || (terrain[i + tm]) == 3|| (terrain[i + bm] == 3)))
+                                terrain[i + mm] = 2;
+                        for (let i = 0; i < sz2; i++)
+                            if (terrain[i + mm] == 2)
+                                terrain[i + mm] = 3;
+                    }
+
+                    //Create Sand
+                    for (let i = 0; i < sz2; i++) {
+                        if (terrain[i + mm] == 1 && ((terrain[i + ml] == 3) || (terrain[i + mr] == 3) || (terrain[i + tm]) == 3|| (terrain[i + bm] == 3))) {
+                            terrain[i + mm] = 2;
                         }
                     }
 
+                    //Smooth Sand
                     for (let d = 0; d < 5; d++) {
-                    for (let i = 0; i < size.value * size.value; i++) {
-                        if (trr[i] == 3 && trr[i + Math.round(size.value * 2.00000000001)] == 3) {
-                            trr[i + Math.round(size.value * 1.00000000001)] = 3;
-                        }
-                        if (trr[i] == 3 && trr[i - size.value * 2] == 3) {
-                            trr[i - size.value] = 3;
-                        }
-                        if (trr[i] == 3 && trr[i - 2] == 3) {
-                            trr[i - 1] = 3;
-                        }
-                        if (trr[i] == 3 && trr[i + 2] == 3) {
-                            trr[i + 1] = 3;
+                        for (let i = 0; i < sz2; i++) {
+                            if (terrain[i + mm] == 2 && terrain[i + bm * 2] == 2)
+                                terrain[i + bm] = 2;
+                            if (terrain[i + mm] == 2 && terrain[i + tm * 2] == 2)
+                                terrain[i + tm] = 2;
+                            if (terrain[i + mm] == 2 && terrain[i + ml * 2] == 2)
+                                terrain[i + ml] = 2;
+                            if (terrain[i + mm] == 2 && terrain[i + mr * 2] == 2)
+                                terrain[i + mr] = 2;
                         }
                     }
-                    }
-
-                    for (let d = 0; d < 5; d++) {
-                        for (let i = 0; i < size.value * size.value; i++) {
-                            if (trr[i] == 3 && (trr[i + 1] == 1 && trr[i - 1] == 1 && trr[i + Math.round(size.value * 1.00000000001)] == 1)) { //<v>
-                                trr[i] = 1;
-                            }
-                            if (trr[i] == 3 && (trr[i + 1] == 1 && trr[i - 1] == 1 && trr[i - size.value] == 1)) { //<^>
-                                trr[i] = 1;
-                            }
-                            if (trr[i] == 3 && (trr[i - 1] == 1 && trr[i + Math.round(size.value * 1.00000000001)] == 1 && trr[i - size.value] == 1)) { //<^v
-                                trr[i] = 1;
-                            }
-                            if (trr[i] == 3 && (trr[i + 1] == 1 && trr[i + Math.round(size.value * 1.00000000001)] == 1 && trr[i - size.value] == 1)) { //^v>
-                                trr[i] = 1;
-                            }
-                        }
-                    }
-
-                    for (let d = 0; d < size.value * size.value; d++) {
-                        if (trr[d] == 1 && ((trr[d + 1] == 3) || (trr[d - 1] == 3) || (trr[d - size.value]) == 3|| (trr[d + Math.round(size.value * 1.0000000000001)] == 3))) {
-                            trr[d] = 2;
-                        }
-                    }
-
-                    for (let d = 0; d < size.value * size.value; d++) {
-                        if (trr[d] == 2) {
-                            trr[d] = 3;
-                        }
-                    }
-
-                    for (let d = 0; d < size.value * size.value; d++) {
-                        if (trr[d] == 1 && ((trr[d + 1] == 3) || (trr[d - 1] == 3) || (trr[d - size.value]) == 3|| (trr[d + Math.round(size.value * 1.0000000000001)] == 3))) {
-                            trr[d] = 2;
-                        }
-                    }
-
-                    for (let d = 0; d < size.value * size.value; d++) {
-                        if (trr[d] == 2) {
-                            trr[d] = 3;
-                        }
-                    }
-
-                    for (let d = 0; d < size.value * size.value; d++) {
-                        if (trr[d] == 1 && ((trr[d + 1] == 3) || (trr[d - 1] == 3) || (trr[d - size.value]) == 3|| (trr[d + Math.round(size.value * 1.0000000000001)] == 3))) {
-                            trr[d] = 2;
-                        }
-                    }
-
-                    for (let d = 0; d < 5; d++) {
-                    for (let i = 0; i < size.value * size.value; i++) {
-                        if (trr[i] == 2 && trr[i + Math.round(size.value * 2.00000000001)] == 2) {
-                            trr[i + Math.round(size.value * 1.00000000001)] = 2;
-                        }
-                        if (trr[i] == 2 && trr[i - size.value * 2] == 2) {
-                            trr[i - size.value] = 2;
-                        }
-                        if (trr[i] == 2 && trr[i - 2] == 2) {
-                            trr[i - 1] = 2;
-                        }
-                        if (trr[i] == 2 && trr[i + 2] == 2) {
-                            trr[i + 1] = 2;
-                        }
-                    }
-                    }
-
-                    for (let d = 0; d < size.value * size.value; d++) {
-                        if (trr[d] == 2) {
-                            trr[d] = 3;
-                        }
-                    }
-
-                    for (let d = 0; d < size.value * size.value; d++) {
-                        if (trr[d] == 1 && ((trr[d + 1] == 3) || (trr[d - 1] == 3) || (trr[d - size.value]) == 3|| (trr[d + Math.round(size.value * 1.0000000000001)] == 3))) {
-                            trr[d] = 2;
-                        }
-                    }
-
-                    trrB();
                 }
-                if (mode.value == 2) {
-                    trr = new Array(size.value * size.value).fill(3);
-                    trrB();
-                }
-                if (mode.value == 3) {
-                    trr = new Array(size.value * size.value).fill(1);
-                    trrB();
-                }
+                if (mode.value == 2) terrain = new Array(size.value * size.value).fill(3);
+                if (mode.value == 3) terrain = new Array(size.value * size.value).fill(1);
                 if (mode.value == 4) {
-                    trr = new Array(size.value * size.value);
-                    for (let i = 0; i < size.value * size.value; i++) {
-                        chr = `${s2h(`${iseed * Math.pow(Math.sin(i), 2) / 5 / 2 >> Math.pow(s2h(`eee${i / Math.PI}`), 2) * 2}`)}`;
-                        if (chr.charAt(3) >= 4 && chr.charAt(2) >= 4 && chr.charAt(4) != 3) {
 
-                            trr[i - size.value] = 3;
-                            trr[i - size.value - 1] = 3;
-                            trr[i - size.value + 1] = 3;
+                    //Land or Water
+                    terrain = new Array(sz2);
+                    for (let i = 0; i < sz2; i++) {
+                        mathString = `${s2h(`${seedFinal * Math.pow(Math.sin(i), 2) / 3 / 2 >> Math.pow(s2h(`eee${i / Math.PI}`), 2) * 2}`)}`;
+                        if (mathString.charAt(3) >= 1 && mathString.charAt(2) >= 1 && mathString.charAt(4) >= 2 && mathString.charAt(5) >= 3) {
+                            terrain[i + tl] = 3; terrain[i + tm] = 3; terrain[i + tr] = 3;
+                            terrain[i + ml] = 3; terrain[i + mm] = 3; terrain[i + mr] = 3;
+                            terrain[i + bl] = 3; terrain[i + bm] = 3; terrain[i + br] = 3;
+                        } else terrain[i + mm] = 1;
+                    }
 
-                            trr[i - 1] = 3;
-                            trr[i] = 3;
-                            trr[i + 1] = 3;
+                    //Connect Land
+                    for (let i = 0; i < sz2; i++) {
+                        if (terrain[i + mm] == 1 && terrain[i + bm * 2] == 1) terrain[i + bm] = 1;
+                        if (terrain[i + mm] == 1 && terrain[i + tm * 2] == 1) terrain[i + tm] = 1;
+                        if (terrain[i + mm] == 1 && terrain[i + ml * 2] == 1) terrain[i + ml] = 1;
+                        if (terrain[i + mm] == 1 && terrain[i + mr * 2] == 1) terrain[i + mr] = 1;
+                    }
 
-                            trr[Math.round(i + size.value * 1.00000000001)] = 3;
-                            trr[Math.round(i + size.value * 1.00000000001 + 1)] = 3;
-                            trr[Math.round(i + size.value * 1.00000000001 - 1)] = 3;
+                    //Remove 1x1s
+                    for (let d = 0; d < 5; d++)
+                        for (let i = 0; i < sz2; i++) {
+                            if (terrain[i + mm] == 1 && (terrain[i + mr] == 3 && terrain[i + ml] == 3 && terrain[i + bm] == 3)) terrain[i + mm] = 3;
+                            if (terrain[i + mm] == 1 && (terrain[i + ml] == 3 && terrain[i + mr] == 3 && terrain[i + tm] == 3)) terrain[i + mm] = 3;
+                            if (terrain[i + mm] == 1 && (terrain[i + ml] == 3 && terrain[i + bm] == 3 && terrain[i + tm] == 3)) terrain[i + mm] = 3;
+                            if (terrain[i + mm] == 1 && (terrain[i + mr] == 3 && terrain[i + bm] == 3 && terrain[i + tm] == 3)) terrain[i + mm] = 3;
+                        }   
 
-                        } else {
-                            trr[i] = 1;
+                    //Expand Islands
+                    for (let d = 0; d < 3; d++) {
+                        for (let i = 0; i < sz2; i++)
+                            if (terrain[i + mm] == 3 && ((terrain[i + mr] == 1) || (terrain[i + ml] == 1) || (terrain[i + tm]) == 1|| (terrain[i + bm] == 1)))
+                                terrain[i + mm] = 2;
+                        for (let i = 0; i < sz2; i++)
+                            if (terrain[i + mm] == 2)
+                                terrain[i + mm] = 1;
+                    }
+
+                    //Create Sand
+                    for (let i = 0; i < sz2; i++) {
+                        if (terrain[i + mm] == 3 && ((terrain[i + ml] == 1) || (terrain[i + mr] == 1) || (terrain[i + tm]) == 1|| (terrain[i + bm] == 1))) {
+                            terrain[i + mm] = 2;
                         }
                     }
 
+                    //Smooth Sand
                     for (let d = 0; d < 5; d++) {
-                        for (let i = 0; i < size.value * size.value; i++) {
-                            if (trr[i] == 1 && (trr[i + 1] == 3 && trr[i - 1] == 3 && trr[i + Math.round(size.value * 1.00000000001)] == 3)) { //<v>
-                                trr[i] = 3;
-                            }
-                            if (trr[i] == 1 && (trr[i + 1] == 3 && trr[i - 1] == 3 && trr[i - size.value] == 3)) { //<^>
-                                trr[i] = 3;
-                            }
-                            if (trr[i] == 1 && (trr[i - 1] == 3 && trr[i + Math.round(size.value * 1.00000000001)] == 3 && trr[i - size.value] == 3)) { //<^v
-                                trr[i] = 3;
-                            }
-                            if (trr[i] == 1 && (trr[i + 1] == 3 && trr[i + Math.round(size.value * 1.00000000001)] == 3 && trr[i - size.value] == 3)) { //^v>
-                                trr[i] = 3;
-                            }
+                        for (let i = 0; i < sz2; i++) {
+                            if (terrain[i + mm] == 2 && terrain[i + bm * 2] == 2)
+                                terrain[i + bm] = 2;
+                            if (terrain[i + mm] == 2 && terrain[i + tm * 2] == 2)
+                                terrain[i + tm] = 2;
+                            if (terrain[i + mm] == 2 && terrain[i + ml * 2] == 2)
+                                terrain[i + ml] = 2;
+                            if (terrain[i + mm] == 2 && terrain[i + mr * 2] == 2)
+                                terrain[i + mr] = 2;
                         }
                     }
-
-                    for (let d = 0; d < size.value * size.value; d++) {
-                        if (trr[d] == 3 && ((trr[d + 1] == 1) || (trr[d - 1] == 1) || (trr[d - size.value]) == 1|| (trr[d + Math.round(size.value * 1.0000000000001)] == 1))) {
-                            trr[d] = 2;
-                        }
-                    }
-
-                    for (let d = 0; d < size.value * size.value; d++) {
-                        if (trr[d] == 2) {
-                            trr[d] = 1;
-                        }
-                    }
-
-                    for (let d = 0; d < size.value * size.value; d++) {
-                        if (trr[d] == 3 && ((trr[d + 1] == 1) || (trr[d - 1] == 1) || (trr[d - size.value]) == 1|| (trr[d + Math.round(size.value * 1.0000000000001)] == 1))) {
-                            trr[d] = 2;
-                        }
-                    }
-
-                    for (let d = 0; d < size.value * size.value; d++) {
-                        if (trr[d] == 2) {
-                            trr[d] = 1;
-                        }
-                    }
-
-                    for (let d = 0; d < size.value * size.value; d++) {
-                        if (trr[d] == 3 && ((trr[d + 1] == 1) || (trr[d - 1] == 1) || (trr[d - size.value]) == 1|| (trr[d + Math.round(size.value * 1.0000000000001)] == 1))) {
-                            trr[d] = 2;
-                        }
-                    }
-
-                    trrB();
                 }
                 if (mode.value == 5) {
-                    document.getElementById('rr').width = 498 * 3.25;
-                    document.getElementById('rr').height = 373 * 3.25;
-                    document.getElementById('rr').src="https://c.tenor.com/_4YgA77ExHEAAAAC/rick-roll.gif";
-                    cnv.style.display = 'none';
+                    document.getElementById('rr').width = 498 * 3.25; document.getElementById('rr').height = 373 * 3.25;
+                    document.getElementById('rr').src="https://c.tenor.com/_4YgA77ExHEAAAAC/rick-roll.gif"; cnv.style.display = 'none';
                 }
-
-                //Set Displays
-                if (seed.value != 0) {
-                    document.getElementById('seed').innerHTML = `Random Seed: <span style="color: red">NO</span><br>Seed: <span style="color: yellow">${iseed}</span>`;
-                } else {
-                    document.getElementById('seed').innerHTML = `Random Seed: <span style="color: #00ff00">YES</span><br>Seed: <span style="color: yellow">${iseed}</span>`;
-                }
-                document.getElementById('genT').innerHTML = `Generation Time: <span style="color: yellow">~${((performance.now() - genT + 0.001) / 1000).toFixed(3)}s</span>`;
-                document.getElementById('siz').innerHTML = `Map Size: <span style="color: yellow">${size.value} x ${size.value}</span><br>Position: <span style="color: #00ff00">(${x}, ${y})</span>`;
-                document.getElementById('st').innerHTML = `Speed: <span style="color: red">${speed}x</span>`;
 
                 //Add KeyListeners
                 document.addEventListener('keydown', function(event) {
-                    if (event.key == "d" || event.key == "D")
-                        rt = true;
-                    if (event.key == "a" || event.key == "A")
-                        lf = true;
-                    if (event.key == "w" || event.key == "W")
-                        up = true;
-                    if (event.key == "s" || event.key == "S")
-                        dw = true;
-                    if (event.key == "0" || event.key == ")")
-                        zer = true;
-                    if (event.key == "1" || event.key == "!")
-                        one = true;
-                    if (event.key == "2" || event.key == "@")
-                        two = true;
-                    if (event.key == "3" || event.key == "#")
-                        thr = true;
-                    if (event.key == "ArrowLeft")
-                        zmi = true;
-                    if (event.key == "ArrowRight")
-                        zmo = true;
-                    if (event.key == "ArrowUp")
-                        zmzi = true;
-                    if (event.key == "ArrowDown")
-                        zmz = true;
-                    if (event.key == "/")
-                        spp = true;
-                    if (event.shiftKey)
-                        bs = true;
+                    if (event.key == "d" || event.key == "D") right = true;
+                    if (event.key == "a" || event.key == "A") left = true;
+                    if (event.key == "w" || event.key == "W") up = true;
+                    if (event.key == "s" || event.key == "S") down = true;
+                    if (event.key == "0" || event.key == ")") zero = true;
+                    if (event.key == "1" || event.key == "!") one = true;
+                    if (event.key == "2" || event.key == "@") two = true;
+                    if (event.key == "3" || event.key == "#") three = true;
+                    if (event.key == "ArrowLeft") zoomIn = true;
+                    if (event.key == "ArrowRight") zoomOut = true;
+                    if (event.key == "ArrowUp") zoomMin = true;
+                    if (event.key == "ArrowDown") zoomMax = true;
+                    if (event.key == "/") spp = true;
+                    if (event.shiftKey) largeBrush = true;
                 }, true);
                 document.addEventListener('keyup', function(event) {
-                    if (event.key == "d" || event.key == "D")
-                        rt = false;
-                    if (event.key == "a" || event.key == "A")
-                        lf = false;
-                    if (event.key == "w" || event.key == "W")
-                        up = false;
-                    if (event.key == "s" || event.key == "S")
-                        dw = false;
-                    if (event.key == "0" || event.key == ")")
-                        zer = false;
-                    if (event.key == "1" || event.key == "!")
-                        one = false;
-                    if (event.key == "2" || event.key == "@")
-                        two = false;
-                    if (event.key == "3" || event.key == "#")
-                        thr = false;
-                    if (event.key == "ArrowLeft")
-                        zmi = false;
-                    if (event.key == "ArrowRight")
-                        zmo = false;
-                    if (event.key == "ArrowUp")
-                        zmzi = false;
-                    if (event.key == "ArrowDown")
-                        zmz = false;
-                    if (event.key == "/")
-                        spp = false;
-                    if (!event.shiftKey)
-                        bs = false;
+                    if (event.key == "d" || event.key == "D") right = false;
+                    if (event.key == "a" || event.key == "A") left = false;
+                    if (event.key == "w" || event.key == "W") up = false;
+                    if (event.key == "s" || event.key == "S") down = false;
+                    if (event.key == "0" || event.key == ")") zero = false;
+                    if (event.key == "1" || event.key == "!") one = false;
+                    if (event.key == "2" || event.key == "@") two = false;
+                    if (event.key == "3" || event.key == "#") three = false;
+                    if (event.key == "ArrowLeft") zoomIn = false;
+                    if (event.key == "ArrowRight") zoomOut = false;
+                    if (event.key == "ArrowUp") zoomMin = false;
+                    if (event.key == "ArrowDown") zoomMax = false;
+                    if (event.key == "/") spp = false;
+                    if (!event.shiftKey) largeBrush = false;
                 }, true);
 
-                //Prepare FPS Counter
-                setInterval(tick, 0);
-                lstU = performance.now();
-                dt = 0;
-
-                can = new Uint8ClampedArray(size.value * size.value * 4);
+                canvas = new Uint8ClampedArray(sz2 * 4);
                 x = size.value / 2 - 13;
                 y = size.value / 2 - 13;
 
-                ent.push(new ents(200, 200, 2, 2));
-                ent.push(new ents(300, 300, 3, 3));
+                //Set Displays
+                if (seed.value != 0) document.getElementById('seed').innerHTML = `Random Seed: <span style="color: red">NO</span><br>Seed: <span style="color: yellow">${seedFinal}</span>`;
+                else document.getElementById('seed').innerHTML = `Random Seed: <span style="color: #00ff00">YES</span><br>Seed: <span style="color: yellow">${seedFinal}</span>`;
+                document.getElementById('genT').innerHTML = `Generation Time: <span style="color: yellow">~${((performance.now() - genT + 0.001) / 1000).toFixed(3)}s</span>`;
+                document.getElementById('st').innerHTML = `Speed: <span style="color: red">${speed}x</span>`;
+
+                //Prepare FPS Counter
+                setInterval(tick, 0);
+                lastUpdate = performance.now();
+                deltaTime = 0;
             }
 
             function tick() {
                 let now = performance.now();
-                dt += now - lstU;
-                lstU = now;
-                while (dt >= 1000 / 60) {
-                    dt -= 1000 / 60;
+                deltaTime += now - lastUpdate;
+                lastUpdate = now;
+                while (deltaTime >= 1000 / 60) {
+                    deltaTime -= 1000 / 60;
                     update();
                 }
                 render();
@@ -402,121 +292,103 @@
             function update() {
 
                 //Zoom
-                if (zmzi && zoom != 25)
-                    zoom = 25;
-                if (zmz && zoom != size.value)
-                    zoom = size.value;
-                if (zmo && zoom < size.value)
-                    zoom++;
-                if (zmi && zoom > 25)
-                    zoom--;
+                if (zoomMin && zoom != 25) zoom = 25;
+                if (zoomMax && zoom != size.value) zoom = size.value;
+                if (zoomOut && zoom < size.value) zoom++;
+                if (zoomIn && zoom > 25) zoom--;
 
                 //Placing
-                if (zer && zoom == 25)
-                    trr[(Math.round(x) + 12) + ((Math.round(y) + 12) * size.value)] = 0;
+                if (zero && zoom == 25)
+                    terrain[(Math.round(x) + 12) + ((Math.round(y) + 12) * size.value)] = 0;
                 if (one && zoom == 25)
-                    trr[(Math.round(x) + 12) + ((Math.round(y) + 12) * size.value)] = 1;
+                    terrain[(Math.round(x) + 12) + ((Math.round(y) + 12) * size.value)] = 1;
                 if (two && zoom == 25)
-                    trr[(Math.round(x) + 12) + ((Math.round(y) + 12) * size.value)] = 2;
-                if (thr && zoom == 25)
-                    trr[(Math.round(x) + 12) + ((Math.round(y) + 12) * size.value)] = 3;
+                    terrain[(Math.round(x) + 12) + ((Math.round(y) + 12) * size.value)] = 2;
+                if (three && zoom == 25)
+                    terrain[(Math.round(x) + 12) + ((Math.round(y) + 12) * size.value)] = 3;
 
-                if (bs) {
-                    if (zer && zoom == 25) {
-                        trr[(Math.round(x) + 13) + ((Math.round(y) + 12) * size.value)] = 0;
-                        trr[(Math.round(x) + 11) + ((Math.round(y) + 12) * size.value)] = 0;
-                        trr[(Math.round(x) + 12) + ((Math.round(y) + 11) * size.value)] = 0;
-                        trr[(Math.round(x) + 12) + ((Math.round(y) + 13) * size.value)] = 0;
+                if (largeBrush) {
+                    if (zero && zoom == 25) {
+                        terrain[(Math.round(x) + 13) + ((Math.round(y) + 12) * size.value)] = 0;
+                        terrain[(Math.round(x) + 11) + ((Math.round(y) + 12) * size.value)] = 0;
+                        terrain[(Math.round(x) + 12) + ((Math.round(y) + 11) * size.value)] = 0;
+                        terrain[(Math.round(x) + 12) + ((Math.round(y) + 13) * size.value)] = 0;
                     }
                     if (one && zoom == 25) {
-                        trr[(Math.round(x) + 13) + ((Math.round(y) + 12) * size.value)] = 1;
-                        trr[(Math.round(x) + 11) + ((Math.round(y) + 12) * size.value)] = 1;
-                        trr[(Math.round(x) + 12) + ((Math.round(y) + 11) * size.value)] = 1;
-                        trr[(Math.round(x) + 12) + ((Math.round(y) + 13) * size.value)] = 1;
+                        terrain[(Math.round(x) + 13) + ((Math.round(y) + 12) * size.value)] = 1;
+                        terrain[(Math.round(x) + 11) + ((Math.round(y) + 12) * size.value)] = 1;
+                        terrain[(Math.round(x) + 12) + ((Math.round(y) + 11) * size.value)] = 1;
+                        terrain[(Math.round(x) + 12) + ((Math.round(y) + 13) * size.value)] = 1;
                     }
                     if (two && zoom == 25) {
-                        trr[(Math.round(x) + 13) + ((Math.round(y) + 12) * size.value)] = 2;
-                        trr[(Math.round(x) + 11) + ((Math.round(y) + 12) * size.value)] = 2;
-                        trr[(Math.round(x) + 12) + ((Math.round(y) + 11) * size.value)] = 2;
-                        trr[(Math.round(x) + 12) + ((Math.round(y) + 13) * size.value)] = 2;
+                        terrain[(Math.round(x) + 13) + ((Math.round(y) + 12) * size.value)] = 2;
+                        terrain[(Math.round(x) + 11) + ((Math.round(y) + 12) * size.value)] = 2;
+                        terrain[(Math.round(x) + 12) + ((Math.round(y) + 11) * size.value)] = 2;
+                        terrain[(Math.round(x) + 12) + ((Math.round(y) + 13) * size.value)] = 2;
                     }
-                    if (thr && zoom == 25) {
-                        trr[(Math.round(x) + 13) + ((Math.round(y) + 12) * size.value)] = 3;
-                        trr[(Math.round(x) + 11) + ((Math.round(y) + 12) * size.value)] = 3;
-                        trr[(Math.round(x) + 12) + ((Math.round(y) + 11) * size.value)] = 3;
-                        trr[(Math.round(x) + 12) + ((Math.round(y) + 13) * size.value)] = 3;
+                    if (three && zoom == 25) {
+                        terrain[(Math.round(x) + 13) + ((Math.round(y) + 12) * size.value)] = 3;
+                        terrain[(Math.round(x) + 11) + ((Math.round(y) + 12) * size.value)] = 3;
+                        terrain[(Math.round(x) + 12) + ((Math.round(y) + 11) * size.value)] = 3;
+                        terrain[(Math.round(x) + 12) + ((Math.round(y) + 13) * size.value)] = 3;
                     }
-                    trrB();
                 }
+                trrB();
 
                 //Movement
-                if (rt && x < size.value - 25 + 11)
-                    x+=zoom / 100;
-                if (lf && x > 0 - 11)
-                    x-=zoom / 100;
-                if (up && y > 0 - 11)
-                    y-=zoom / 100;
-                if (dw && y < size.value - 25 + 11)
-                    y+=zoom / 100;
-                if (!rt && !lf && !dw && !up) {
+                if (right && x < size.value - 14) x+=zoom / 100;
+                if (left && x > -11) x-=zoom / 100;
+                if (up && y > -11) y-=zoom / 100;
+                if (down && y < size.value - 14) y+=zoom / 100;
+
+                //Position Correction
+                if (!right && !left && !down && !up) {
                     x = Math.round(x);
                     y = Math.round(y);
                 }
-                if (x > size.value - 25 + 11)
-                    x=size.value-14;
-                if (x < 0 - 11)
-                    x=-11;
-                if (y < 0 - 11)
-                    y=-11;
-                if (y > size.value - 25 + 11)
-                    y=size.value-14;
+                if (x > size.value - 14) x=size.value-14; if (x < -11) x=-11; if (y < -11) y=-11; if (y > size.value - 14) y=size.value-14;
             }
 
             function render() {
 
                 //FPS
-                fps = Math.round(1000 / dt);
-                if (fps > 60)
-                    document.getElementById('fps').innerHTML = `FPS: <span style="color: yellow">60+</span>`;
-                if (fps <= 60)
-                    document.getElementById('fps').innerHTML = `FPS: <span style="color: yellow">${Math.round(fps)}</span>`;
+                fps = Math.round(1000 / deltaTime);
+                if (fps > 60) document.getElementById('fps').innerHTML = `FPS: <span style="color: yellow">60+</span>`;
+                if (fps <= 60) document.getElementById('fps').innerHTML = `FPS: <span style="color: yellow">${Math.round(fps)}</span>`;
                 document.getElementById('siz').innerHTML = `Map Size: <span style="color: yellow">${size.value - 2} x ${size.value - 2}</span><br>Position: <span style="color: #00ff00">(${(x + 12).toFixed(1)}, ${(y + 12).toFixed(1)})</span>`;
 
                 //Draw Terrain
-                for (let i = 0; i < can.length; i += 4) {
-                    if (trr[i / 4] == 0) {
-                        can[i + 0] = 255;
-                        can[i + 1] = 0;
-                        can[i + 2] = 0;
-                        can[i + 3] = 255;
+                for (let i = 0; i < canvas.length; i += 4) {
+                    if (terrain[i / 4] == 0) {
+                        canvas[i + 0] = 255;
+                        canvas[i + 1] = 0;
+                        canvas[i + 2] = 0;
+                        canvas[i + 3] = 255;
                     }
-                    if (trr[i / 4] == 1) {
-                        can[i + 0] = 0;
-                        can[i + 1] = 0;
-                        can[i + 2] = 200;
-                        can[i + 3] = 255;
+                    if (terrain[i / 4] == 1) {
+                        canvas[i + 0] = 0;
+                        canvas[i + 1] = 0;
+                        canvas[i + 2] = 200;
+                        canvas[i + 3] = 255;
                     }
-                    if (trr[i / 4] == 2) {
-                        can[i + 0] = 255;
-                        can[i + 1] = 255;
-                        can[i + 2] = 100;
-                        can[i + 3] = 255;
+                    if (terrain[i / 4] == 2) {
+                        canvas[i + 0] = 255;
+                        canvas[i + 1] = 255;
+                        canvas[i + 2] = 100;
+                        canvas[i + 3] = 255;
                     }
-                    if (trr[i / 4] == 3) {
-                        can[i + 0] = 0;
-                        can[i + 1] = 205;
-                        can[i + 2] = 75;
-                        can[i + 3] = 255;
+                    if (terrain[i / 4] == 3) {
+                        canvas[i + 0] = 0;
+                        canvas[i + 1] = 205;
+                        canvas[i + 2] = 75;
+                        canvas[i + 3] = 255;
                     }
                 }
-
-                //Draw Entities
-                
 
                 //Draw to Screen
                 ctx.fillStyle = "#000000ff";
                 ctx.fillRect(0, 0, cnv.width, cnv.height);
-                let imd = new ImageData(can, size.value);
+                let imd = new ImageData(canvas, size.value);
                 ctx2.putImageData(imd, 0, 0);
                 ctx.scale(cnv.height / zoom, cnv.height / zoom);
                 ctx.drawImage(cnv2, -x - (12.5 - zoom / 2), -y - (12.5 - zoom / 2));
@@ -552,18 +424,11 @@
 
             function trrB() {
                 for (let i = 0; i < size.value; i++) {
-                    trr[i] = 0;
-                    trr[i * size.value] = 0;
-                    trr[i + size.value * (size.value - 1)] = 0;
-                    trr[i * size.value + (size.value - 0.5) * 2] = 0;
+                    terrain[i] = 0;
+                    terrain[i * size.value] = 0;
+                    terrain[i + size.value * (size.value - 1)] = 0;
+                    terrain[i * size.value + (size.value - 0.5) * 2] = 0;
                 }
-            }
-
-            function ents(x, y, h, a) {
-                ent.push(x);
-                ent.push(y);
-                ent.push(h);
-                ent.push(a);
             }
 
         </script>
