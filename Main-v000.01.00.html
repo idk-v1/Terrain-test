@@ -41,9 +41,9 @@
         <script>
 
             //Initialize Variables
-            let fps, seedFinal, deltaTime, x, y, size, mode, speed = 0, lastUpdate, mathString, zoom = 25;
+            let fps, seedFinal, deltaTime, x, y, size, mode, speed = 0, lastUpdate, mathString, zoom = 25, brushMode = 0;
             let up = false, down = false, left = false, right = false,
-            zero = false, one = false, two = false, three = false, 
+            zero = false, one = false, two = false, three = false, paint = false; 
             zoomIn = false, zoomOut = false, zoomMax = false, zoomMin = false, 
             spp = false, started = false, largeBrush = false;
             let terrain = [], structures = [], entities = [], canvas = [];
@@ -92,8 +92,8 @@
                 let tmpSz = size.value / 1; size.value = tmpSz + 2;
                 if (size.value > 2502) size.value = 2502;
                 if (size.value < 27) size.value = 27;
-                if (seed.value) seedFinal = `${seed.value}`;
-                else seedFinal = `${s2h(`${Math.random()}`)}`;
+                if (seed.value.length > 5) seedFinal = `${seed.value}`;
+                else seedFinal = `${s2h(`${Math.random()}`) * 13131}`;
                 tl = -size.value - 1; tm = -size.value - 0; tr = -size.value + 1;
                 ml = -1; mm = 0; mr = 1;
                 bl = size.value - 1; bm = size.value - 0; br = size.value + 1;
@@ -234,15 +234,15 @@
                     if (event.key == "a" || event.key == "A") left = true;
                     if (event.key == "w" || event.key == "W") up = true;
                     if (event.key == "s" || event.key == "S") down = true;
-                    if (event.key == "0" || event.key == ")") zero = true;
-                    if (event.key == "1" || event.key == "!") one = true;
-                    if (event.key == "2" || event.key == "@") two = true;
-                    if (event.key == "3" || event.key == "#") three = true;
+                    if (event.key == "0" || event.key == ")") brushMode = 0;
+                    if (event.key == "1" || event.key == "!") brushMode = 1;
+                    if (event.key == "2" || event.key == "@") brushMode = 2;
+                    if (event.key == "3" || event.key == "#") brushMode = 3;
                     if (event.key == "ArrowLeft") zoomIn = true;
                     if (event.key == "ArrowRight") zoomOut = true;
                     if (event.key == "ArrowUp") zoomMin = true;
                     if (event.key == "ArrowDown") zoomMax = true;
-                    if (event.key == "/") spp = true;
+                    if (event.key == "Enter") paint = true;
                     if (event.getModifierState("CapsLock")) largeBrush = true;
                 }, true);
                 document.addEventListener('keyup', function(event) {
@@ -250,15 +250,15 @@
                     if (event.key == "a" || event.key == "A") left = false;
                     if (event.key == "w" || event.key == "W") up = false;
                     if (event.key == "s" || event.key == "S") down = false;
-                    if (event.key == "0" || event.key == ")") zero = false;
-                    if (event.key == "1" || event.key == "!") one = false;
-                    if (event.key == "2" || event.key == "@") two = false;
-                    if (event.key == "3" || event.key == "#") three = false;
+                    if (event.key == "0" || event.key == ")") brushMode = 0;
+                    if (event.key == "1" || event.key == "!") brushMode = 1;
+                    if (event.key == "2" || event.key == "@") brushMode = 2;
+                    if (event.key == "3" || event.key == "#") brushMode = 3;
                     if (event.key == "ArrowLeft") zoomIn = false;
                     if (event.key == "ArrowRight") zoomOut = false;
                     if (event.key == "ArrowUp") zoomMin = false;
                     if (event.key == "ArrowDown") zoomMax = false;
-                    if (event.key == "/") spp = false;
+                    if (event.key == "Enter") paint = false;
                     if (!event.getModifierState("CapsLock")) largeBrush = false;
                 }, true);
 
@@ -267,7 +267,7 @@
                 y = size.value / 2 - 13;
 
                 //Set Displays
-                if (seed.value != 0) document.getElementById('seed').innerHTML = `Random Seed: <span style="color: red">NO</span><br>Seed: <span style="color: yellow">${seedFinal}</span>`;
+                if (seed.value.length > 5) document.getElementById('seed').innerHTML = `Random Seed: <span style="color: red">NO</span><br>Seed: <span style="color: yellow">${seedFinal}</span>`;
                 else document.getElementById('seed').innerHTML = `Random Seed: <span style="color: #00ff00">YES</span><br>Seed: <span style="color: yellow">${seedFinal}</span>`;
                 document.getElementById('genT').innerHTML = `Generation Time: <span style="color: yellow">~${((performance.now() - genT + 0.001) / 1000).toFixed(3)}s</span>`;
                 document.getElementById('st').innerHTML = `Speed: <span style="color: red">${speed}x</span>`;
@@ -298,40 +298,14 @@
                 if (zoomIn && zoom > 25) zoom--;
 
                 //Placing
-                if (zero && zoom == 25)
-                    terrain[(Math.round(x) + 12) + ((Math.round(y) + 12) * size.value)] = 0;
-                if (one && zoom == 25)
-                    terrain[(Math.round(x) + 12) + ((Math.round(y) + 12) * size.value)] = 1;
-                if (two && zoom == 25)
-                    terrain[(Math.round(x) + 12) + ((Math.round(y) + 12) * size.value)] = 2;
-                if (three && zoom == 25)
-                    terrain[(Math.round(x) + 12) + ((Math.round(y) + 12) * size.value)] = 3;
+                if (zoom == 25 && paint)
+                    terrain[(Math.round(x) + 12) + ((Math.round(y) + 12) * size.value)] = brushMode;
 
-                if (largeBrush) {
-                    if (zero && zoom == 25) {
-                        terrain[(Math.round(x) + 13) + ((Math.round(y) + 12) * size.value)] = 0;
-                        terrain[(Math.round(x) + 11) + ((Math.round(y) + 12) * size.value)] = 0;
-                        terrain[(Math.round(x) + 12) + ((Math.round(y) + 11) * size.value)] = 0;
-                        terrain[(Math.round(x) + 12) + ((Math.round(y) + 13) * size.value)] = 0;
-                    }
-                    if (one && zoom == 25) {
-                        terrain[(Math.round(x) + 13) + ((Math.round(y) + 12) * size.value)] = 1;
-                        terrain[(Math.round(x) + 11) + ((Math.round(y) + 12) * size.value)] = 1;
-                        terrain[(Math.round(x) + 12) + ((Math.round(y) + 11) * size.value)] = 1;
-                        terrain[(Math.round(x) + 12) + ((Math.round(y) + 13) * size.value)] = 1;
-                    }
-                    if (two && zoom == 25) {
-                        terrain[(Math.round(x) + 13) + ((Math.round(y) + 12) * size.value)] = 2;
-                        terrain[(Math.round(x) + 11) + ((Math.round(y) + 12) * size.value)] = 2;
-                        terrain[(Math.round(x) + 12) + ((Math.round(y) + 11) * size.value)] = 2;
-                        terrain[(Math.round(x) + 12) + ((Math.round(y) + 13) * size.value)] = 2;
-                    }
-                    if (three && zoom == 25) {
-                        terrain[(Math.round(x) + 13) + ((Math.round(y) + 12) * size.value)] = 3;
-                        terrain[(Math.round(x) + 11) + ((Math.round(y) + 12) * size.value)] = 3;
-                        terrain[(Math.round(x) + 12) + ((Math.round(y) + 11) * size.value)] = 3;
-                        terrain[(Math.round(x) + 12) + ((Math.round(y) + 13) * size.value)] = 3;
-                    }
+                if (largeBrush && paint && zoom == 25) {
+                    terrain[(Math.round(x) + 13) + ((Math.round(y) + 12) * size.value)] = brushMode;
+                    terrain[(Math.round(x) + 11) + ((Math.round(y) + 12) * size.value)] = brushMode;
+                    terrain[(Math.round(x) + 12) + ((Math.round(y) + 11) * size.value)] = brushMode;
+                    terrain[(Math.round(x) + 12) + ((Math.round(y) + 13) * size.value)] = brushMode;
                 }
                 trrB();
 
@@ -406,10 +380,10 @@
                     ctx.moveTo(cnv.height / 2, cnv.width / 2 - (cnv.height / 25) / 2);
                     ctx.lineTo(cnv.height / 2, cnv.width / 2 + (cnv.height / 25) / 2);
                 } else {
-                    ctx.moveTo(cnv.width / 2 - (cnv.height / 37) / 2, cnv.width / 2 - (cnv.height / 37) / 2);
-                    ctx.lineTo(cnv.width / 2 + (cnv.height / 37) / 2, cnv.width / 2 + (cnv.height / 37) / 2);
-                    ctx.moveTo(cnv.width / 2 + (cnv.height / 37) / 2, cnv.width / 2 - (cnv.height / 37) / 2);
-                    ctx.lineTo(cnv.width / 2 - (cnv.height / 37) / 2, cnv.width / 2 + (cnv.height / 37) / 2);
+                    ctx.moveTo(cnv.width / 2 - (cnv.height / 37.5) / 2, cnv.width / 2 - (cnv.height / 37.5) / 2);
+                    ctx.lineTo(cnv.width / 2 + (cnv.height / 37.5) / 2, cnv.width / 2 + (cnv.height / 37.5) / 2);
+                    ctx.moveTo(cnv.width / 2 + (cnv.height / 37.5) / 2, cnv.width / 2 - (cnv.height / 37.5) / 2);
+                    ctx.lineTo(cnv.width / 2 - (cnv.height / 37.5) / 2, cnv.width / 2 + (cnv.height / 37.5) / 2);
                 }
                 ctx.stroke();
             }
