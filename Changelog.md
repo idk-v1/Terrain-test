@@ -1,9 +1,16 @@
 ## v000.01.00
 - ### BUG FIXES
+  - Improved performance in loops
 
 - ### FEATURE CHANGES
-  - Added zoom in, zoom out, max zoom, min zoom
-  - Added large brush
+  - Added five experimental pink dots that move.
+  - Changed FPS to be more readable
 
 - ### KNOWN ISSUES
   - Random redrawing of the map offsets some pixels (visual only).
+  - Experimental pink dots do not collide with each other.
+  
+- ### UPCOMING FEATURES
+  - More experimental dots
+  - Better textures
+  - Dot pathfinding and interactions
