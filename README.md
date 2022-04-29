@@ -10,7 +10,7 @@ abandoned like everything else.
 - 1, 2, 3, and 0 for colors
 - / for commands
 
-  - # commands
+  - ### Commands
   - /kill
   - /tp, x, y
   - /speed, s
