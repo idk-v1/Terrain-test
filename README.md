@@ -6,6 +6,6 @@ abandoned like everything else.
 - wasd for movement
 - arrow keys for zoom
 - capslock for large brush
-- enter to paint
+- enter for paint
 - 1, 2, 3, and 0 for colors
 - / for commands
