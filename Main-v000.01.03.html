@@ -45,7 +45,7 @@
             let up = false, down = false, left = false, right = false,
             zero = false, one = false, two = false, three = false, paint = false; 
             zoomIn = false, zoomOut = false, zoomMax = false, zoomMin = false, 
-            spp = false, started = false, largeBrush = false;
+            pathFind = true, started = false, largeBrush = false;
             let terrain = [], structures = [], entities = [], canvas = [];
 
             //Setup Canvas
@@ -140,11 +140,9 @@
                     }
 
                     //Create Sand
-                    for (let i = 0; i < sz2; i++) {
-                        if (terrain[i + mm] == 1 && ((terrain[i + ml] == 3) || (terrain[i + mr] == 3) || (terrain[i + tm]) == 3|| (terrain[i + bm] == 3))) {
+                    for (let i = 0; i < sz2; i++)
+                        if (terrain[i + mm] == 1 && ((terrain[i + ml] == 3) || (terrain[i + mr] == 3) || (terrain[i + tm]) == 3|| (terrain[i + bm] == 3)))
                             terrain[i + mm] = 2;
-                        }
-                    }
 
                     //Smooth Sand
                     for (let d = 0; d < 5; d++) {
@@ -203,11 +201,9 @@
                     }
 
                     //Create Sand
-                    for (let i = 0; i < sz2; i++) {
-                        if (terrain[i + mm] == 3 && ((terrain[i + ml] == 1) || (terrain[i + mr] == 1) || (terrain[i + tm]) == 1|| (terrain[i + bm] == 1))) {
+                    for (let i = 0; i < sz2; i++)
+                        if (terrain[i + mm] == 3 && ((terrain[i + ml] == 1) || (terrain[i + mr] == 1) || (terrain[i + tm]) == 1|| (terrain[i + bm] == 1)))
                             terrain[i + mm] = 2;
-                        }
-                    }
 
                     //Smooth Sand
                     for (let d = 0; d < 5; d++) {
@@ -272,6 +268,12 @@
                 document.getElementById('genT').innerHTML = `Generation Time: <span style="color: yellow">~${((performance.now() - genT + 0.001) / 1000).toFixed(3)}s</span>`;
                 document.getElementById('st').innerHTML = `Speed: <span style="color: red">${speed}x</span>`;
 
+                ent(10, 10, 5, 5, 5);
+                ent(11, 10, 5, 5, 5);
+                ent(12, 10, 5, 5, 5);
+                ent(13, 10, 5, 5, 5);
+                ent(14, 10, 5, 5, 5);
+
                 //Prepare FPS Counter
                 setInterval(tick, 0);
                 lastUpdate = performance.now();
@@ -290,6 +292,18 @@
             }
 
             function update() {
+
+                //Move Entities
+                for (i = 0; i < entities.length; i+=5) {
+                    if (Math.floor(Math.random() * 51) == 1 && (terrain[entities[i + 0] + entities[i + 1] * size.value + mr] == 3 || 
+                    terrain[entities[i + 0] + entities[i + 1] * size.value + mr] == 2) && pathFind) pfR(i);
+                    if (Math.floor(Math.random() * 51) == 1 && (terrain[entities[i + 0] + entities[i + 1] * size.value + ml] == 3 || 
+                    terrain[entities[i + 0] + entities[i + 1] * size.value + ml] == 2) && pathFind) pfL(i);
+                    if (Math.floor(Math.random() * 51) == 1 && (terrain[entities[i + 0] + entities[i + 1] * size.value + bm] == 3 || 
+                    terrain[entities[i + 0] + entities[i + 1] * size.value + bm] == 2) && pathFind) pfD(i);
+                    if (Math.floor(Math.random() * 51) == 1 && (terrain[entities[i + 0] + entities[i + 1] * size.value + tm] == 3 || 
+                    terrain[entities[i + 0] + entities[i + 1] * size.value + tm] == 2) && pathFind) pfU(i);
+                }
 
                 //Zoom
                 if (zoomMin && zoom != 25) zoom = 25;
@@ -336,30 +350,35 @@
 
                 //Draw Terrain
                 for (let i = 0; i < sz2 * 4; i += 4) {
+                    canvas[i + 3] = 255;
                     if (terrain[i / 4] == 0) {
                         canvas[i + 0] = 255;
                         canvas[i + 1] = 0;
                         canvas[i + 2] = 0;
-                        canvas[i + 3] = 255;
                     }
                     if (terrain[i / 4] == 1) {
                         canvas[i + 0] = 0;
                         canvas[i + 1] = 0;
                         canvas[i + 2] = 200;
-                        canvas[i + 3] = 255;
                     }
                     if (terrain[i / 4] == 2) {
                         canvas[i + 0] = 255;
                         canvas[i + 1] = 255;
                         canvas[i + 2] = 100;
-                        canvas[i + 3] = 255;
                     }
                     if (terrain[i / 4] == 3) {
                         canvas[i + 0] = 0;
                         canvas[i + 1] = 205;
                         canvas[i + 2] = 75;
-                        canvas[i + 3] = 255;
                     }
+                }
+
+                //Draw Entities
+                for (let i = 0; i < entities.length; i+=5) {
+                    canvas[(entities[i + 0] + entities[i + 1] * size.value) * 4 + 0] = 200;
+                    canvas[(entities[i + 0] + entities[i + 1] * size.value) * 4 + 1] = 80;
+                    canvas[(entities[i + 0] + entities[i + 1] * size.value) * 4 + 2] = 150;
+                    canvas[(entities[i + 0] + entities[i + 1] * size.value) * 4 + 3] = 255;
                 }
 
                 //Draw to Screen
@@ -405,6 +424,30 @@
                     terrain[i + size.value * (size.value - 1)] = 0;
                     terrain[i * size.value + (size.value - 0.5) * 2] = 0;
                 }
+            }
+
+            function ent(x, y, a, d, t) {
+                entities.push(x);
+                entities.push(y);
+                entities.push(a);
+                entities.push(d);
+                entities.push(t);
+            }
+
+            function pfL(i) {
+                entities[i + 0]--;
+            }
+
+            function pfR(i) {
+                entities[i + 0]++;
+            }
+
+            function pfD(i) {
+                entities[i + 1]++;
+            }
+
+            function pfU(i) {
+                entities[i + 1]--;
             }
 
         </script>
