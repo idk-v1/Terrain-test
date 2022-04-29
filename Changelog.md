@@ -3,7 +3,7 @@
   - Improved performance in loops
 
 - ### FEATURE CHANGES
-  - Added five experimental pink dots that move.
+  - Added five experimental pink dots that move and die on borders.
   - Changed FPS to be more readable
 
 - ### KNOWN ISSUES
@@ -13,4 +13,4 @@
 - ### UPCOMING FEATURES
   - More experimental dots
   - Better textures
-  - Dot pathfinding and interactions
+  - Dot better pathfinding and interactions
