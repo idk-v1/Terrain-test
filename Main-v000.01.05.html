@@ -257,6 +257,9 @@
                     if (event.key == "Enter") paint = false;
                     if (!event.getModifierState("CapsLock")) largeBrush = false;
                 }, true);
+                document.addEventListener('keypress', function(event) {
+                    if (event.key == "/") cons();
+                }, true);
 
                 canvas = new Uint8ClampedArray(sz2 * 4);
                 x = size.value / 2 - 13;
@@ -267,12 +270,6 @@
                 else document.getElementById('seed').innerHTML = `Random Seed: <span style="color: #00ff00">YES</span><br>Seed: <span style="color: yellow">${seedFinal}</span>`;
                 document.getElementById('genT').innerHTML = `Generation Time: <span style="color: yellow">~${((performance.now() - genT + 0.001) / 1000).toFixed(3)}s</span>`;
                 document.getElementById('st').innerHTML = `Speed: <span style="color: red">${speed}x</span>`;
-
-                ent(10, 10, 5, 5, 5);
-                ent(11, 10, 5, 5, 5);
-                ent(12, 10, 5, 5, 5);
-                ent(13, 10, 5, 5, 5);
-                ent(14, 10, 5, 5, 5);
 
                 //Prepare FPS Counter
                 setInterval(tick, 0);
@@ -303,6 +300,8 @@
                     terrain[entities[i + 0] + entities[i + 1] * size.value + bm] == 2) && pathFind) pfD(i);
                     if (Math.floor(Math.random() * 51) == 1 && (terrain[entities[i + 0] + entities[i + 1] * size.value + tm] == 3 || 
                     terrain[entities[i + 0] + entities[i + 1] * size.value + tm] == 2) && pathFind) pfU(i);
+                    if (terrain[entities[i + 0] + entities[i + 1] * size.value + mm] == 0) entities[i + 3] -= 0.01;
+                    if (entities[i + 3] <= 0) entities.splice(i, 5);
                 }
 
                 //Zoom
@@ -427,11 +426,25 @@
             }
 
             function ent(x, y, a, d, t) {
+                if (!x) x = 1;
+                if (!y) y = 1;
+                if (!a) a = 1;
+                if (!d) d = 1;
+                if (!t) t = 1;
                 entities.push(x);
                 entities.push(y);
                 entities.push(a);
                 entities.push(d);
                 entities.push(t);
+            }
+
+            function cons() {
+                let input = prompt("Chat");
+                if (input) if (input.startsWith("/place")) {
+                    let t1 = input.trim();
+                    let p1 = t1.split(",");
+                    ent(Math.abs(Math.round(p1[1])), Math.abs(Math.round(p1[2])), Math.abs(Math.round(p1[3])), Math.abs(Math.round(p1[4])), Math.abs(Math.round(p1[5])));
+                }
             }
 
             function pfL(i) {
