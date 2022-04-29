@@ -41,7 +41,7 @@
         <script>
 
             //Initialize Variables
-            let fps, seedFinal, deltaTime, x, y, size, mode, speed = 0, lastUpdate, mathString, zoom = 25, brushMode = 0;
+            let fps, seedFinal, deltaTime, x, y, size, mode, speed = 1, lastUpdate, mathString, zoom = 25, brushMode = 0;
             let up = false, down = false, left = false, right = false,
             zero = false, one = false, two = false, three = false, paint = false; 
             zoomIn = false, zoomOut = false, zoomMax = false, zoomMin = false, 
@@ -269,7 +269,6 @@
                 if (seed.value.length > 5) document.getElementById('seed').innerHTML = `Random Seed: <span style="color: red">NO</span><br>Seed: <span style="color: yellow">${seedFinal}</span>`;
                 else document.getElementById('seed').innerHTML = `Random Seed: <span style="color: #00ff00">YES</span><br>Seed: <span style="color: yellow">${seedFinal}</span>`;
                 document.getElementById('genT').innerHTML = `Generation Time: <span style="color: yellow">~${((performance.now() - genT + 0.001) / 1000).toFixed(3)}s</span>`;
-                document.getElementById('st').innerHTML = `Speed: <span style="color: red">${speed}x</span>`;
 
                 //Prepare FPS Counter
                 setInterval(tick, 0);
@@ -281,8 +280,8 @@
                 let now = performance.now();
                 deltaTime += now - lastUpdate;
                 lastUpdate = now;
-                while (deltaTime >= 1000 / 60) {
-                    deltaTime -= 1000 / 60;
+                while (deltaTime >= 1000 / 60 / speed) {
+                    deltaTime -= 1000 / 60 / speed;
                     update();
                 }
                 render();
@@ -292,6 +291,8 @@
 
                 //Move Entities
                 for (i = 0; i < entities.length; i+=5) {
+                    if (terrain[entities[i + 0] + entities[i + 1] * size.value + mm] == 0) entities[i + 3] -= 0.01;
+                    if (entities[i + 3] <= 0) entities.splice(i, 5);
                     if (Math.floor(Math.random() * 51) == 1 && (terrain[entities[i + 0] + entities[i + 1] * size.value + mr] == 3 || 
                     terrain[entities[i + 0] + entities[i + 1] * size.value + mr] == 2) && pathFind) pfR(i);
                     if (Math.floor(Math.random() * 51) == 1 && (terrain[entities[i + 0] + entities[i + 1] * size.value + ml] == 3 || 
@@ -300,8 +301,6 @@
                     terrain[entities[i + 0] + entities[i + 1] * size.value + bm] == 2) && pathFind) pfD(i);
                     if (Math.floor(Math.random() * 51) == 1 && (terrain[entities[i + 0] + entities[i + 1] * size.value + tm] == 3 || 
                     terrain[entities[i + 0] + entities[i + 1] * size.value + tm] == 2) && pathFind) pfU(i);
-                    if (terrain[entities[i + 0] + entities[i + 1] * size.value + mm] == 0) entities[i + 3] -= 0.01;
-                    if (entities[i + 3] <= 0) entities.splice(i, 5);
                 }
 
                 //Zoom
@@ -346,6 +345,8 @@
                 if (fps > 60) document.getElementById('fps').innerHTML = `FPS: <span style="color: #00ff00">60+</span>`;
                 if (fps <= 60) document.getElementById('fps').innerHTML = `FPS: <span style="color: yellow">${Math.round(fps)}</span>`;
                 document.getElementById('siz').innerHTML = `Map Size: <span style="color: yellow">${size.value - 2} x ${size.value - 2}</span><br>Position: <span style="color: #00ff00">(${(x + 12).toFixed(1)}, ${(y + 12).toFixed(1)})</span>`;
+                if (speed != 0) document.getElementById('st').innerHTML = `Speed: <span style="color: yellow">${speed}x</span>`;
+                else document.getElementById('st').innerHTML = `Speed: <span style="color: red">${speed}x</span>`;
 
                 //Draw Terrain
                 for (let i = 0; i < sz2 * 4; i += 4) {
@@ -440,10 +441,33 @@
 
             function cons() {
                 let input = prompt("Chat");
-                if (input) if (input.startsWith("/place")) {
+
+                //place
+                if (input.startsWith("/place")) {
                     let t1 = input.trim();
                     let p1 = t1.split(",");
+                    if (!p1[1]) p1[1] = (x + 12).toFixed();
+                    if (!p1[2]) p1[2] = (y + 12).toFixed();
                     ent(Math.abs(Math.round(p1[1])), Math.abs(Math.round(p1[2])), Math.abs(Math.round(p1[3])), Math.abs(Math.round(p1[4])), Math.abs(Math.round(p1[5])));
+                }
+
+                //tp
+                if (input.startsWith("/tp")) {
+                    let t1 = input.trim();
+                    let p1 = t1.split(",");
+                    if (p1[1]) x = Math.round(p1[1] - 12);
+                    if (p1[2]) y = Math.round(p1[2] - 12);
+                }
+
+                //kill
+                if (input.startsWith("/kill")) entities = new Array;
+
+                //speed
+                if (input.startsWith("/speed")) {
+                    let t1 = input.trim();
+                    let p1 = t1.split(",");
+                    if (!p1[1]) p1[1] = 1;
+                    speed = p1[1];
                 }
             }
 
