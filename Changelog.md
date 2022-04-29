@@ -1,10 +1,11 @@
 ## v000.01.00
 - ### BUG FIXES
-  - Improved performance in loops
+  - Improved performance in loops.
 
 - ### FEATURE CHANGES
   - Added five experimental pink dots that move and die on borders.
-  - Changed FPS to be more readable
+  - Changed FPS to be more readable.
+  - /place command placess dots.
 
 - ### KNOWN ISSUES
   - Random redrawing of the map offsets some pixels (visual only).
