@@ -9,3 +9,9 @@ abandoned like everything else.
 - enter for paint
 - 1, 2, 3, and 0 for colors
 - / for commands
+
+  - # commands
+  - /kill
+  - /tp, x, y
+  - /speed, s
+  - /place, x, y, a, d, t
