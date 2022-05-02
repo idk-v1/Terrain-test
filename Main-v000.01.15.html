@@ -41,7 +41,7 @@
         <script>
 
             //Initialize Variables
-            let fps, seedFinal, deltaTime, x, y, size, mode, speed = 1, lastUpdate, mathString, zoom = 25, brushMode = 0;
+            let fps, seedFinal, deltaTime, dt, x, y, size, mode, speed = 1, lastUpdate, mathString, zoom = 25, brushMode = 0, day = -3600, globalBright;
             let up = false, down = false, left = false, right = false,
             zero = false, one = false, two = false, three = false, paint = false; 
             zoomIn = false, zoomOut = false, zoomMax = false, zoomMin = false, 
@@ -274,12 +274,18 @@
                 setInterval(tick, 0);
                 lastUpdate = performance.now();
                 deltaTime = 0;
+                dt = 0;
             }
 
             function tick() {
                 let now = performance.now();
                 deltaTime += now - lastUpdate;
+                dt += now - lastUpdate;
                 lastUpdate = now;
+                while (dt >= 1000 / 60) {
+                    dt -= 1000 / 60;
+                    playerUpdate();
+                }
                 while (deltaTime >= 1000 / 60 / speed) {
                     deltaTime -= 1000 / 60 / speed;
                     update();
@@ -287,21 +293,7 @@
                 render();
             }
 
-            function update() {
-
-                //Move Entities
-                for (i = 0; i < entities.length; i+=5) {
-                    if (terrain[entities[i + 0] + entities[i + 1] * size.value + mm] == 0) entities[i + 3] -= 0.01;
-                    if (entities[i + 3] <= 0) entities.splice(i, 5);
-                    if (Math.floor(Math.random() * 51) == 1 && (terrain[entities[i + 0] + entities[i + 1] * size.value + mr] == 3 || 
-                    terrain[entities[i + 0] + entities[i + 1] * size.value + mr] == 2) && pathFind) pfR(i);
-                    if (Math.floor(Math.random() * 51) == 1 && (terrain[entities[i + 0] + entities[i + 1] * size.value + ml] == 3 || 
-                    terrain[entities[i + 0] + entities[i + 1] * size.value + ml] == 2) && pathFind) pfL(i);
-                    if (Math.floor(Math.random() * 51) == 1 && (terrain[entities[i + 0] + entities[i + 1] * size.value + bm] == 3 || 
-                    terrain[entities[i + 0] + entities[i + 1] * size.value + bm] == 2) && pathFind) pfD(i);
-                    if (Math.floor(Math.random() * 51) == 1 && (terrain[entities[i + 0] + entities[i + 1] * size.value + tm] == 3 || 
-                    terrain[entities[i + 0] + entities[i + 1] * size.value + tm] == 2) && pathFind) pfU(i);
-                }
+            function playerUpdate() {
 
                 //Zoom
                 if (zoomMin && zoom != 25) zoom = 25;
@@ -336,6 +328,28 @@
                 if (x < -11) x=-11; 
                 if (y < -11) y=-11; 
                 if (y > size.value - 14) y=size.value-14;
+
+            }
+
+            function update() {
+
+                day++
+                if (day >= 3600) day = -3600;
+                globalBright = Math.abs(day / 36);
+
+                //Move Entities
+                for (i = 0; i < entities.length; i+=5) {
+                    if (terrain[entities[i + 0] + entities[i + 1] * size.value + mm] == 0) entities[i + 3] -= 0.01;
+                    if (entities[i + 3] <= 0) entities.splice(i, 5);
+                    if (Math.floor(Math.random() * 51) == 1 && (terrain[entities[i + 0] + entities[i + 1] * size.value + mr] == 3 || 
+                    terrain[entities[i + 0] + entities[i + 1] * size.value + mr] == 2) && pathFind) pfR(i);
+                    if (Math.floor(Math.random() * 51) == 1 && (terrain[entities[i + 0] + entities[i + 1] * size.value + ml] == 3 || 
+                    terrain[entities[i + 0] + entities[i + 1] * size.value + ml] == 2) && pathFind) pfL(i);
+                    if (Math.floor(Math.random() * 51) == 1 && (terrain[entities[i + 0] + entities[i + 1] * size.value + bm] == 3 || 
+                    terrain[entities[i + 0] + entities[i + 1] * size.value + bm] == 2) && pathFind) pfD(i);
+                    if (Math.floor(Math.random() * 51) == 1 && (terrain[entities[i + 0] + entities[i + 1] * size.value + tm] == 3 || 
+                    terrain[entities[i + 0] + entities[i + 1] * size.value + tm] == 2) && pathFind) pfU(i);
+                }
             }
 
             function render() {
@@ -345,39 +359,39 @@
                 if (fps > 60) document.getElementById('fps').innerHTML = `FPS: <span style="color: #00ff00">60+</span>`;
                 if (fps <= 60) document.getElementById('fps').innerHTML = `FPS: <span style="color: yellow">${Math.round(fps)}</span>`;
                 document.getElementById('siz').innerHTML = `Map Size: <span style="color: yellow">${size.value - 2} x ${size.value - 2}</span><br>Position: <span style="color: #00ff00">(${(x + 12).toFixed(1)}, ${(y + 12).toFixed(1)})</span>`;
-                if (speed != 0) document.getElementById('st').innerHTML = `Speed: <span style="color: yellow">${speed}x</span>`;
-                else document.getElementById('st').innerHTML = `Speed: <span style="color: red">${speed}x</span>`;
+                if (speed != 0) document.getElementById('st').innerHTML = `Speed: <span style="color: yellow">${speed}x</span><br>Time: <span style="color: yellow">${day + 3600}</span>`;
+                else document.getElementById('st').innerHTML = `Speed: <span style="color: red">${speed}x</span><br>Time: <span style="color: yellow">${day + 3600}</span>`;
 
                 //Draw Terrain
                 for (let i = 0; i < sz2 * 4; i += 4) {
                     canvas[i + 3] = 255;
                     if (terrain[i / 4] == 0) {
-                        canvas[i + 0] = 255;
+                        canvas[i + 0] = 255 - globalBright;
                         canvas[i + 1] = 0;
                         canvas[i + 2] = 0;
                     }
                     if (terrain[i / 4] == 1) {
                         canvas[i + 0] = 0;
                         canvas[i + 1] = 0;
-                        canvas[i + 2] = 200;
+                        canvas[i + 2] = 200 - globalBright;
                     }
                     if (terrain[i / 4] == 2) {
-                        canvas[i + 0] = 255;
-                        canvas[i + 1] = 255;
-                        canvas[i + 2] = 100;
+                        canvas[i + 0] = 255 - globalBright;
+                        canvas[i + 1] = 255 - globalBright;
+                        canvas[i + 2] = 100 - globalBright;
                     }
                     if (terrain[i / 4] == 3) {
                         canvas[i + 0] = 0;
-                        canvas[i + 1] = 205;
-                        canvas[i + 2] = 75;
+                        canvas[i + 1] = 205 - globalBright;
+                        canvas[i + 2] = 75 - globalBright;
                     }
                 }
 
                 //Draw Entities
                 for (let i = 0; i < entities.length; i+=5) {
-                    canvas[(entities[i + 0] + entities[i + 1] * size.value) * 4 + 0] = 200;
-                    canvas[(entities[i + 0] + entities[i + 1] * size.value) * 4 + 1] = 80;
-                    canvas[(entities[i + 0] + entities[i + 1] * size.value) * 4 + 2] = 150;
+                    canvas[(entities[i + 0] + entities[i + 1] * size.value) * 4 + 0] = 200 - globalBright;
+                    canvas[(entities[i + 0] + entities[i + 1] * size.value) * 4 + 1] = 80 - globalBright;
+                    canvas[(entities[i + 0] + entities[i + 1] * size.value) * 4 + 2] = 150 - globalBright;
                     canvas[(entities[i + 0] + entities[i + 1] * size.value) * 4 + 3] = 255;
                 }
 
@@ -441,20 +455,17 @@
 
             function cons() {
                 let input = prompt("Chat");
+                let p1 = input.split(" ");
 
                 //place
                 if (input.startsWith("/place")) {
-                    let t1 = input.trim();
-                    let p1 = t1.split(",");
                     if (!p1[1]) p1[1] = (x + 12).toFixed();
                     if (!p1[2]) p1[2] = (y + 12).toFixed();
                     ent(Math.abs(Math.round(p1[1])), Math.abs(Math.round(p1[2])), Math.abs(Math.round(p1[3])), Math.abs(Math.round(p1[4])), Math.abs(Math.round(p1[5])));
                 }
 
                 //tp
-                if (input.startsWith("/tp")) {
-                    let t1 = input.trim();
-                    let p1 = t1.split(",");
+                if (input.startsWith("/tp ")) {
                     if (p1[1]) x = Math.round(p1[1] - 12);
                     if (p1[2]) y = Math.round(p1[2] - 12);
                 }
@@ -464,11 +475,14 @@
 
                 //speed
                 if (input.startsWith("/speed")) {
-                    let t1 = input.trim();
-                    let p1 = t1.split(",");
-                    if (!p1[1]) p1[1] = 1;
-                    speed = p1[1];
+                    if (p1[1]) speed = p1[1];
                 }
+
+                //time
+                if (input.startsWith("/time")) {
+                    if (p1[1]) day = p1[1] - 3600;
+                }
+                lastUpdate = performance.now();
             }
 
             function pfL(i) {
