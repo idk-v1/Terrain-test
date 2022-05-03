@@ -46,7 +46,7 @@
             zero = false, one = false, two = false, three = false, paint = false; 
             zoomIn = false, zoomOut = false, zoomMax = false, zoomMin = false, 
             pathFind = true, started = false, largeBrush = false;
-            let terrain = [], structures = [], entities = [], canvas = [];
+            let terrain = [], structures = [], entities = [], canvas = [], collisions = [];
 
             //Setup Canvas
             let cnv = document.getElementById('canv');
@@ -286,7 +286,7 @@
                     dt -= 1000 / 60;
                     playerUpdate();
                 }
-                while (deltaTime >= 1000 / 60 / speed) {
+                while (deltaTime >= 1000 / 60 / speed && speed > 0) {
                     deltaTime -= 1000 / 60 / speed;
                     update();
                 }
@@ -335,7 +335,6 @@
 
                 day++
                 if (day >= 3600) day = -3600;
-                globalBright = Math.abs(day / 36);
 
                 //Move Entities
                 for (i = 0; i < entities.length; i+=5) {
@@ -361,6 +360,7 @@
                 document.getElementById('siz').innerHTML = `Map Size: <span style="color: yellow">${size.value - 2} x ${size.value - 2}</span><br>Position: <span style="color: #00ff00">(${(x + 12).toFixed(1)}, ${(y + 12).toFixed(1)})</span>`;
                 if (speed != 0) document.getElementById('st').innerHTML = `Speed: <span style="color: yellow">${speed}x</span><br>Time: <span style="color: yellow">${day + 3600}</span>`;
                 else document.getElementById('st').innerHTML = `Speed: <span style="color: red">${speed}x</span><br>Time: <span style="color: yellow">${day + 3600}</span>`;
+                globalBright = Math.abs((3600 - Math.abs(day)) / 36);
 
                 //Draw Terrain
                 for (let i = 0; i < sz2 * 4; i += 4) {
@@ -482,7 +482,9 @@
                 if (input.startsWith("/time")) {
                     if (p1[1]) day = p1[1] - 3600;
                 }
+
                 lastUpdate = performance.now();
+                render();
             }
 
             function pfL(i) {
